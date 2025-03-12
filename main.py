@@ -7,11 +7,20 @@ from datetime import datetime
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Predefined list of major U.S. stock tickers (you can expand this list as needed)
+# Predefined list of major U.S. stock tickers
 TICKERS = [
-  "AAPL", "MSFT", "GOOG", "AMZN", "META",  # FAANG (with Meta instead of old FB)
-  "NFLX", "TSLA", "NVDA", "JPM", "BAC"       # other high-volume stocks
-  # ... (Add S&P 500 tickers or others to this list as needed)
+  "AAPL",
+  "MSFT",
+  "GOOG",
+  "AMZN",
+  "META",
+  "NFLX",
+  "TSLA",
+  "NVDA",
+  "JPM",
+  "BAC",
+  "SOXL",
+  "SOXS"
 ]
 
 @app.get("/", response_class=HTMLResponse)
@@ -35,12 +44,11 @@ def get_top_gainers(request: Request):
         })
     # Sort the stocks by percentage change (descending) to find top gainers
     results.sort(key=lambda x: x["percent_change"], reverse=True)
-    top_gainers = results[:10]  # keep top 10 gainers for display
     # Timestamp for last update
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     # Render the HTML template with the data
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "gainers": top_gainers, "last_update": current_time},
+        {"request": request, "gainers": results, "last_update": current_time},
         request=request
     ) 

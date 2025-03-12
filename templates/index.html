@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Top Stock Gainers</title>
+    <title>Stock Market Movers</title>
     <!-- Auto-refresh the page every 60 seconds to update data -->
     <meta http-equiv="refresh" content="60">
     <style>
@@ -13,6 +13,7 @@
         th { background: #f4f4f4; }
         td { text-align: right; }
         td:first-child, th:first-child { text-align: left; }
+        .negative { background-color: #ffdddd; }
     </style>
 </head>
 <body>
@@ -26,7 +27,7 @@
             <th>Change (%)</th>
         </tr>
         {% for stock in gainers %}
-        <tr>
+        <tr {% if stock.percent_change < 0 %}class="negative"{% endif %}>
             <td>{{ stock.symbol }}</td>
             <td>{{ "%.2f"|format(stock.price) }}</td>
             <td>{{ "%.2f"|format(stock.change) }}</td>
