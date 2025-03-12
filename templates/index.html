@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Top Stock Gainers</title>
+    <!-- Auto-refresh the page every 60 seconds to update data -->
+    <meta http-equiv="refresh" content="60">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        h1 { text-align: center; }
+        table { border-collapse: collapse; width: 100%; max-width: 800px; margin: 1em auto; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f4f4f4; }
+        td { text-align: right; }
+        td:first-child, th:first-child { text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Top Stock Gainers</h1>
+    <p>Last updated: <strong>{{ last_update }}</strong></p>
+    <table>
+        <tr>
+            <th>Symbol</th>
+            <th>Price (USD)</th>
+            <th>Change (USD)</th>
+            <th>Change (%)</th>
+        </tr>
+        {% for stock in gainers %}
+        <tr>
+            <td>{{ stock.symbol }}</td>
+            <td>{{ "%.2f"|format(stock.price) }}</td>
+            <td>{{ "%.2f"|format(stock.change) }}</td>
+            <td>{{ "%.2f"|format(stock.percent_change) }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html> 
