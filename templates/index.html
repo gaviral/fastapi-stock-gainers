@@ -2,38 +2,95 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Stock Market Movers</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market</title>
     <!-- Auto-refresh the page every 60 seconds to update data -->
     <meta http-equiv="refresh" content="60">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; margin: 2em; }
-        h1 { text-align: center; }
-        table { border-collapse: collapse; width: 100%; max-width: 800px; margin: 1em auto; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f4f4f4; }
-        td { text-align: right; }
-        td:first-child, th:first-child { text-align: left; }
-        .negative { background-color: #ffdddd; }
+        .negative { background-color: rgba(255, 200, 200, 0.5); }
+        .positive { background-color: rgba(200, 255, 200, 0.5); }
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .last-updated {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .table-container {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
-    <h1>Top Stock Gainers</h1>
-    <p>Last updated: <strong>{{ last_update }}</strong></p>
-    <table>
-        <tr>
-            <th>Symbol</th>
-            <th>Price (USD)</th>
-            <th>Change (USD)</th>
-            <th>Change (%)</th>
-        </tr>
-        {% for stock in gainers %}
-        <tr {% if stock.percent_change < 0 %}class="negative"{% endif %}>
-            <td>{{ stock.symbol }}</td>
-            <td>{{ "%.2f"|format(stock.price) }}</td>
-            <td>{{ "%.2f"|format(stock.change) }}</td>
-            <td>{{ "%.2f"|format(stock.percent_change) }}%</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div class="container-fluid">
+        <!-- Header with title, last updated time, and refresh button -->
+        <div class="header-container">
+            <h1 class="h2 mb-0">Stock Market</h1>
+            <div class="d-flex align-items-center">
+                <span class="last-updated me-3">Last updated: <strong>{{ last_update }}</strong></span>
+                <button class="btn btn-primary" onclick="window.location.reload()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Stock data table -->
+        <div class="table-container">
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Company</th>
+                        <th>Price (USD)</th>
+                        <th>Change (USD)</th>
+                        <th>Change (%) <i class="fas fa-sort-down"></i></th>
+                        <th>Volume</th>
+                        <th>Market Cap (USD)</th>
+                        <th>52-Week Range</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in gainers %}
+                    <tr class="positive">
+                        <td><strong>{{ stock.symbol }}</strong></td>
+                        <td>{{ stock.name }}</td>
+                        <td>{{ "%.2f"|format(stock.price) }}</td>
+                        <td>{{ "%.2f"|format(stock.change) }}</td>
+                        <td>{{ "%.2f"|format(stock.percent_change) }}%</td>
+                        <td>{% if stock.volume %}{{ "{:,}".format(stock.volume|int) }}{% else %}N/A{% endif %}</td>
+                        <td>{% if stock.market_cap %}{{ "${:,.0f}B".format(stock.market_cap / 1000000000) }}{% else %}N/A{% endif %}</td>
+                        <td>{% if stock.fifty_two_week_low and stock.fifty_two_week_high %}{{ "%.2f"|format(stock.fifty_two_week_low) }} - {{ "%.2f"|format(stock.fifty_two_week_high) }}{% else %}N/A{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for stock in losers %}
+                    <tr class="negative">
+                        <td><strong>{{ stock.symbol }}</strong></td>
+                        <td>{{ stock.name }}</td>
+                        <td>{{ "%.2f"|format(stock.price) }}</td>
+                        <td>{{ "%.2f"|format(stock.change) }}</td>
+                        <td>{{ "%.2f"|format(stock.percent_change) }}%</td>
+                        <td>{% if stock.volume %}{{ "{:,}".format(stock.volume|int) }}{% else %}N/A{% endif %}</td>
+                        <td>{% if stock.market_cap %}{{ "${:,.0f}B".format(stock.market_cap / 1000000000) }}{% else %}N/A{% endif %}</td>
+                        <td>{% if stock.fifty_two_week_low and stock.fifty_two_week_high %}{{ "%.2f"|format(stock.fifty_two_week_low) }} - {{ "%.2f"|format(stock.fifty_two_week_high) }}{% else %}N/A{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 
