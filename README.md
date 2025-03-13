@@ -16,6 +16,7 @@ Visit: [https://fastapi-stock-gainers.onrender.com](https://fastapi-stock-gainer
 - Color-coded display (green for gains, red for losses)
 - Responsive UI with Bootstrap
 - Auto-refresh every 120 seconds to keep data updated
+- Admin dashboard for database management
 
 ## Installation
 
@@ -44,6 +45,20 @@ uvicorn main:app --reload
 - Login at `/login`
 - Reset forgotten passwords at `/forgot-password`
 - Once logged in, you can add custom stock symbols to track
+
+## Admin Interface
+
+The application includes an admin interface to manage users, stocks, and password reset requests:
+
+- Access the admin login page at `/admin`
+- Default credentials: username `admin`, password `changeme` (change these in production)
+- The admin dashboard provides:
+  - User management
+  - Stock tracking overview
+  - Password reset request monitoring
+  - Data filtering and search capabilities
+
+For security reasons, make sure to change the default admin credentials by setting the `ADMIN_USERNAME` and `ADMIN_PASSWORD` environment variables.
 
 ## API Endpoints
 

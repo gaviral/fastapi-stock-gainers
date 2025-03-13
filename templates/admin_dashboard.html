@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Stock Market</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <style>
+        .admin-header {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .admin-card {
+            margin-bottom: 30px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .admin-card-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: bold;
+        }
+        .admin-card-body {
+            padding: 20px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .badge-active {
+            background-color: #28a745;
+        }
+        .badge-inactive {
+            background-color: #dc3545;
+        }
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+        .logout-btn {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
+                <div>
+                    <span class="text-light me-3">Welcome, Admin</span>
+                    <a href="/admin/logout" class="btn btn-outline-light logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="true">
+                    <i class="fas fa-users"></i> Users
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="stocks-tab" data-bs-toggle="tab" data-bs-target="#stocks" type="button" role="tab" aria-controls="stocks" aria-selected="false">
+                    <i class="fas fa-chart-line"></i> Stocks
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="password-resets-tab" data-bs-toggle="tab" data-bs-target="#password-resets" type="button" role="tab" aria-controls="password-resets" aria-selected="false">
+                    <i class="fas fa-key"></i> Password Resets
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="adminTabsContent">
+            <!-- Users Tab -->
+            <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <i class="fas fa-users"></i> User Management
+                        <span class="badge bg-primary rounded-pill float-end">{{ users|length }}</span>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="table-responsive">
+                            <table id="usersTable" class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Superuser</th>
+                                        <th>Verified</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.id }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            {% if user.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.is_superuser %}
+                                            <span class="badge bg-warning">Yes</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.is_verified %}
+                                            <span class="badge bg-info">Yes</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary" title="View User Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-warning" title="Edit User">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" title="Delete User">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stocks Tab -->
+            <div class="tab-pane fade" id="stocks" role="tabpanel" aria-labelledby="stocks-tab">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <i class="fas fa-chart-line"></i> User Stock Tracking
+                        <span class="badge bg-primary rounded-pill float-end">{{ stocks|length }}</span>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="table-responsive">
+                            <table id="stocksTable" class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>User ID</th>
+                                        <th>User Email</th>
+                                        <th>Symbol</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stock in stocks %}
+                                    <tr>
+                                        <td>{{ stock.id }}</td>
+                                        <td>{{ stock.user_id }}</td>
+                                        <td>{{ stock.user_email }}</td>
+                                        <td><span class="badge bg-primary">{{ stock.symbol }}</span></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary" title="View Stock Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" title="Delete Stock">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Resets Tab -->
+            <div class="tab-pane fade" id="password-resets" role="tabpanel" aria-labelledby="password-resets-tab">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <i class="fas fa-key"></i> Password Reset Requests
+                        <span class="badge bg-primary rounded-pill float-end">{{ password_resets|length }}</span>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="table-responsive">
+                            <table id="passwordResetsTable" class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>User ID</th>
+                                        <th>User Email</th>
+                                        <th>Token</th>
+                                        <th>Created At</th>
+                                        <th>Expires At</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reset in password_resets %}
+                                    <tr>
+                                        <td>{{ reset.id }}</td>
+                                        <td>{{ reset.user_id }}</td>
+                                        <td>{{ reset.user_email }}</td>
+                                        <td>
+                                            <span class="text-truncate d-inline-block" style="max-width: 150px;" title="{{ reset.token }}">
+                                                {{ reset.token }}
+                                            </span>
+                                        </td>
+                                        <td>{{ reset.created_at }}</td>
+                                        <td>{{ reset.expires_at }}</td>
+                                        <td>
+                                            {% if reset.is_expired %}
+                                            <span class="badge bg-danger">Expired</span>
+                                            {% else %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-danger" title="Delete Reset Token">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables
+            $('#usersTable').DataTable({
+                "pageLength": 10,
+                "order": [[1, "asc"]]
+            });
+            
+            $('#stocksTable').DataTable({
+                "pageLength": 10,
+                "order": [[2, "asc"]]
+            });
+            
+            $('#passwordResetsTable').DataTable({
+                "pageLength": 10,
+                "order": [[4, "desc"]]
+            });
+        });
+    </script>
+</body>
+</html> 

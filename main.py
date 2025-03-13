@@ -2,13 +2,13 @@ from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import uuid
 from fastapi_users import schemas
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
 import secrets
 from typing import Optional
 import os
@@ -16,6 +16,9 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+import hashlib
+from starlette.status import HTTP_401_UNAUTHORIZED
+import hmac
 
 # Load environment variables from .env file
 load_dotenv()
@@ -41,6 +44,8 @@ EMAIL_USER = os.getenv("EMAIL_USER", "")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "")
 EMAIL_FROM = os.getenv("EMAIL_FROM", "noreply@stockmarket.com")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
 
 # Log email configuration
 logger.info(f"Email configuration: HOST={EMAIL_HOST}, PORT={EMAIL_PORT}, USER={EMAIL_USER}, FROM={EMAIL_FROM}")
@@ -94,6 +99,9 @@ TICKERS = [
   "PYPL",  # PayPal
   "COIN"   # Coinbase
 ]
+
+# Add this after the other app configurations
+security = HTTPBasic()
 
 @app.get("/", response_class=HTMLResponse)
 async def get_stock_data(
@@ -529,4 +537,139 @@ async def send_email(to_email: str, subject: str, html_content: str) -> bool:
     except Exception as e:
         logger.error(f"Failed to send email: {str(e)}")
         logger.error(f"Email configuration: HOST={EMAIL_HOST}, PORT={EMAIL_PORT}, USER={EMAIL_USER}, FROM={EMAIL_FROM}")
-        return False 
+        return False
+
+# Add these admin routes after the other routes
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_login_page(request: Request):
+    """Render the admin login page."""
+    return templates.TemplateResponse("admin_login.html", {"request": request})
+
+@app.post("/admin/login", response_class=HTMLResponse)
+async def admin_login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...)
+):
+    """Process admin login."""
+    # Check credentials
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        # Create a session cookie for admin authentication
+        response = RedirectResponse(url="/admin/dashboard", status_code=303)
+        
+        # Create a secure token for the admin session
+        token = hashlib.sha256(f"{username}:{password}:{os.urandom(8).hex()}".encode()).hexdigest()
+        
+        # Set the cookie with HttpOnly and Secure flags
+        response.set_cookie(
+            key="admin_session",
+            value=token,
+            httponly=True,
+            max_age=3600,  # 1 hour
+            path="/admin"
+        )
+        
+        # Store the token in memory (in a real app, you'd use Redis or a database)
+        app.state.admin_sessions = getattr(app.state, "admin_sessions", set())
+        app.state.admin_sessions.add(token)
+        
+        return response
+    else:
+        return templates.TemplateResponse(
+            "admin_login.html",
+            {"request": request, "error": "Invalid username or password"},
+            status_code=401
+        )
+
+async def verify_admin(request: Request):
+    """Verify admin session cookie."""
+    admin_token = request.cookies.get("admin_session")
+    admin_sessions = getattr(app.state, "admin_sessions", set())
+    
+    if not admin_token or admin_token not in admin_sessions:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
+
+@app.get("/admin/dashboard", response_class=HTMLResponse)
+async def admin_dashboard(
+    request: Request,
+    session: AsyncSession = Depends(get_async_session),
+    _: bool = Depends(verify_admin)
+):
+    """Render the admin dashboard."""
+    # Query all users
+    users_query = await session.execute(select(User))
+    users = users_query.scalars().all()
+    
+    # Query all stocks with user emails
+    stocks_query = await session.execute(
+        select(Stock, User.email)
+        .join(User, Stock.user_id == User.id)
+    )
+    stocks_with_emails = stocks_query.all()
+    
+    # Format stocks data
+    stocks = []
+    for stock, user_email in stocks_with_emails:
+        stocks.append({
+            "id": stock.id,
+            "user_id": stock.user_id,
+            "user_email": user_email,
+            "symbol": stock.symbol
+        })
+    
+    # Query all password resets with user emails
+    resets_query = await session.execute(
+        select(PasswordReset, User.email)
+        .join(User, PasswordReset.user_id == User.id)
+    )
+    resets_with_emails = resets_query.all()
+    
+    # Format password resets data
+    password_resets = []
+    for reset, user_email in resets_with_emails:
+        # Calculate expiry time (24 hours from creation)
+        expiry_time = reset.created_at + timedelta(hours=24)
+        is_expired = datetime.now() > expiry_time
+        
+        password_resets.append({
+            "id": reset.id,
+            "user_id": reset.user_id,
+            "user_email": user_email,
+            "token": reset.token,
+            "created_at": reset.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "expires_at": expiry_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "is_expired": is_expired
+        })
+    
+    return templates.TemplateResponse(
+        "admin_dashboard.html",
+        {
+            "request": request,
+            "users": users,
+            "stocks": stocks,
+            "password_resets": password_resets
+        }
+    )
+
+@app.get("/admin/logout", response_class=HTMLResponse)
+async def admin_logout(request: Request):
+    """Process admin logout."""
+    # Get the admin token
+    admin_token = request.cookies.get("admin_session")
+    
+    # Remove the token from the set of valid sessions
+    if admin_token:
+        app.state.admin_sessions = getattr(app.state, "admin_sessions", set())
+        app.state.admin_sessions.discard(admin_token)
+    
+    # Redirect to login page and clear the cookie
+    response = RedirectResponse(url="/admin", status_code=303)
+    response.delete_cookie(key="admin_session", path="/admin")
+    
+    return response 
