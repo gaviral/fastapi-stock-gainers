@@ -39,6 +39,34 @@ uvicorn main:app --reload
 
 2. Open your browser and navigate to `http://localhost:8000`
 
+## Database Configuration
+
+The application supports both SQLite (for development) and PostgreSQL (recommended for production) databases.
+
+### Development Environment (SQLite)
+
+By default, the application uses SQLite, which is stored in a local file (`test.db`). This is suitable for development but not for production as the database file is not persistent across deployments.
+
+### Production Environment (PostgreSQL)
+
+For production, it's strongly recommended to use a PostgreSQL database:
+
+1. Create a PostgreSQL database on your preferred hosting provider (e.g., Render, Heroku, AWS RDS)
+2. Set the `DATABASE_URL` environment variable to your PostgreSQL connection string:
+   ```
+   DATABASE_URL=postgresql+asyncpg://username:password@hostname:port/database_name
+   ```
+
+#### Setting up PostgreSQL on Render.com:
+
+1. Create a new PostgreSQL database in your Render dashboard
+2. Go to your web service's "Environment" tab
+3. Add the `DATABASE_URL` environment variable with the connection string provided by Render
+4. Ensure the connection string uses the `postgresql+asyncpg://` prefix
+5. Save changes and redeploy your application
+
+This ensures your database is persistent across deployments and application restarts.
+
 ## User Authentication
 
 - Register a new account at `/signup`
@@ -79,6 +107,7 @@ For security reasons, make sure to change the default admin credentials by setti
 ## Environment Variables
 
 - `DATABASE_URL` - Database connection string (default: `sqlite+aiosqlite:///./test.db`)
+  - For PostgreSQL: `postgresql+asyncpg://username:password@hostname:port/database_name`
 - `SECRET_KEY` - Secret key for JWT tokens (default: `CHANGEME`)
 - `EMAIL_HOST` - SMTP server for sending emails (default: `smtp.gmail.com`)
 - `EMAIL_PORT` - SMTP port (default: `587`)
@@ -116,6 +145,7 @@ The password reset system sends emails using the configured SMTP settings. For t
 1. Go to your service dashboard on Render
 2. Navigate to "Environment" tab
 3. Add all the required environment variables:
+   - `DATABASE_URL` (PostgreSQL connection string)
    - `EMAIL_HOST`
    - `EMAIL_PORT`
    - `EMAIL_USER`
