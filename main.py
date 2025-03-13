@@ -30,7 +30,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Environment variables
-IS_LOCAL = os.getenv("IS_LOCAL", "true").lower() == "true"
 EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 EMAIL_USER = os.getenv("EMAIL_USER", "")
@@ -275,7 +274,7 @@ async def remove_stock(
 @app.get("/forgot-password", response_class=HTMLResponse)
 async def forgot_password(request: Request):
     """Render the forgot password form."""
-    return templates.TemplateResponse("forgot_password.html", {"request": request, "is_local": IS_LOCAL})
+    return templates.TemplateResponse("forgot_password.html", {"request": request})
 
 @app.post("/forgot-password", response_class=HTMLResponse)
 async def forgot_password_post(
@@ -334,46 +333,22 @@ async def forgot_password_post(
         # Try to send email
         email_sent = await send_email(email, subject, html_content)
         
-        if IS_LOCAL:
-            # In local mode, show the reset link directly
-            return templates.TemplateResponse(
-                "forgot_password.html", 
-                {
-                    "request": request, 
-                    "success": f"<strong>Local Mode:</strong> No emails are actually sent in local mode. You can reset your password by clicking here: <a href='{reset_link}'>Reset Password</a>",
-                    "is_local": IS_LOCAL
-                }
-            )
-        else:
-            # In production mode, just confirm the email was sent
-            return templates.TemplateResponse(
-                "forgot_password.html", 
-                {
-                    "request": request, 
-                    "success": "Password reset instructions have been sent to your email. Please check your inbox and follow the instructions to reset your password.",
-                    "is_local": IS_LOCAL
-                }
-            )
+        return templates.TemplateResponse(
+            "forgot_password.html", 
+            {
+                "request": request, 
+                "success": "If an account exists with that email, password reset instructions have been sent. Please check your inbox."
+            }
+        )
     
     # Always return a success message even if email is not found for security
-    if IS_LOCAL:
-        return templates.TemplateResponse(
-            "forgot_password.html", 
-            {
-                "request": request, 
-                "success": "<strong>Local Mode:</strong> If an account exists with that email, a reset link would be sent. No actual emails are sent in local mode.",
-                "is_local": IS_LOCAL
-            }
-        )
-    else:
-        return templates.TemplateResponse(
-            "forgot_password.html", 
-            {
-                "request": request, 
-                "success": "If an account exists with that email, password reset instructions have been sent. Please check your inbox.",
-                "is_local": IS_LOCAL
-            }
-        )
+    return templates.TemplateResponse(
+        "forgot_password.html", 
+        {
+            "request": request, 
+            "success": "If an account exists with that email, password reset instructions have been sent. Please check your inbox."
+        }
+    )
 
 @app.get("/reset-password", response_class=HTMLResponse)
 async def reset_password(
@@ -476,10 +451,12 @@ async def send_email(to_email: str, subject: str, html_content: str) -> bool:
     Send an email with the given parameters.
     Returns True if successful, False otherwise.
     """
-    if IS_LOCAL or not EMAIL_USER or not EMAIL_PASSWORD:
-        # In local mode or without credentials, just log the email
-        logger.info(f"Would send email to {to_email} with subject: {subject}")
+    # Check if email credentials are available
+    if not EMAIL_USER or not EMAIL_PASSWORD:
+        # Log the email instead of sending if credentials are not available
+        logger.info(f"Email credentials not configured. Would send email to {to_email} with subject: {subject}")
         logger.info(f"Email content: {html_content}")
+        logger.info(f"To enable email sending, configure EMAIL_USER and EMAIL_PASSWORD environment variables.")
         return False
     
     try:

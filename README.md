@@ -57,7 +57,6 @@ uvicorn main:app --reload
 
 - `DATABASE_URL` - Database connection string (default: `sqlite+aiosqlite:///./test.db`)
 - `SECRET_KEY` - Secret key for JWT tokens (default: `CHANGEME`)
-- `IS_LOCAL` - Set to "true" for local development mode, "false" for production (default: `true`)
 - `EMAIL_HOST` - SMTP server for sending emails (default: `smtp.gmail.com`)
 - `EMAIL_PORT` - SMTP port (default: `587`)
 - `EMAIL_USER` - Email username/address for sending password reset emails
@@ -67,9 +66,9 @@ uvicorn main:app --reload
 
 ## Password Reset Functionality
 
-In local development mode (`IS_LOCAL=true`), password reset links are displayed directly in the browser for testing purposes. No actual emails are sent.
+The password reset system will attempt to send emails using the configured SMTP settings. For this to work, make sure to set up the email environment variables properly (`EMAIL_USER`, `EMAIL_PASSWORD`, etc.). 
 
-In production mode (`IS_LOCAL=false`), the application will attempt to send password reset emails using the configured SMTP settings. Make sure to set up the email environment variables properly for this to work.
+If email credentials are not configured, the system will log the password reset links instead of sending emails, which is useful for development and testing.
 
 ## License
 
