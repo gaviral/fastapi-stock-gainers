@@ -60,6 +60,9 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
 class UserCreate(schemas.BaseUserCreate):
     pass
 
+class UserUpdate(schemas.BaseUserUpdate):
+    pass
+
 # Include authentication routers
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
@@ -454,8 +457,9 @@ async def reset_password_post(
     
     # Update password
     try:
+        user_update = UserUpdate(password=password)
         await user_manager.update(
-            user_update={"password": password},
+            user_update=user_update,
             user=user
         )
         
@@ -606,6 +610,18 @@ async def admin_dashboard(
     users_query = await session.execute(select(User))
     users = users_query.scalars().all()
     
+    # Create raw user data for debugging
+    raw_users = []
+    for user in users:
+        raw_users.append({
+            "id": str(user.id),
+            "email": user.email,
+            "is_active": user.is_active,
+            "is_superuser": user.is_superuser,
+            "is_verified": user.is_verified,
+            "hashed_password": user.hashed_password,
+        })
+    
     # Query all stocks with user emails
     stocks_query = await session.execute(
         select(Stock, User.email)
@@ -652,6 +668,7 @@ async def admin_dashboard(
         {
             "request": request,
             "users": users,
+            "raw_users": raw_users,
             "stocks": stocks,
             "password_resets": password_resets
         }

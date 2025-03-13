@@ -71,6 +71,11 @@
                 </button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="raw-users-tab" data-bs-toggle="tab" data-bs-target="#raw-users" type="button" role="tab" aria-controls="raw-users" aria-selected="false">
+                    <i class="fas fa-database"></i> Raw User Data
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="stocks-tab" data-bs-toggle="tab" data-bs-target="#stocks" type="button" role="tab" aria-controls="stocks" aria-selected="false">
                     <i class="fas fa-chart-line"></i> Stocks
                 </button>
@@ -146,6 +151,52 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw Users Tab -->
+            <div class="tab-pane fade" id="raw-users" role="tabpanel" aria-labelledby="raw-users-tab">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <i class="fas fa-database"></i> Raw User Data (Debug)
+                        <span class="badge bg-primary rounded-pill float-end">{{ raw_users|length }}</span>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="table-responsive">
+                            <table id="rawUsersTable" class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Email</th>
+                                        <th>Active</th>
+                                        <th>Superuser</th>
+                                        <th>Verified</th>
+                                        <th>Hashed Password</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in raw_users %}
+                                    <tr>
+                                        <td>{{ user.id }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.is_active }}</td>
+                                        <td>{{ user.is_superuser }}</td>
+                                        <td>{{ user.is_verified }}</td>
+                                        <td>
+                                            <span class="text-truncate d-inline-block" style="max-width: 300px;" title="{{ user.hashed_password }}">
+                                                {{ user.hashed_password }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4">
+                            <h5>Raw JSON Data</h5>
+                            <pre class="bg-light p-3 rounded"><code>{{ raw_users|tojson(indent=2) }}</code></pre>
                         </div>
                     </div>
                 </div>
@@ -268,6 +319,11 @@
         $(document).ready(function() {
             // Initialize DataTables
             $('#usersTable').DataTable({
+                "pageLength": 10,
+                "order": [[1, "asc"]]
+            });
+            
+            $('#rawUsersTable').DataTable({
                 "pageLength": 10,
                 "order": [[1, "asc"]]
             });
