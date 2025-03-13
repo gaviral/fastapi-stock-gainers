@@ -24,6 +24,10 @@ Visit: [https://fastapi-stock-gainers.onrender.com](https://fastapi-stock-gainer
 ```bash
 pip install -r requirements.txt
 ```
+3. Copy `.env.example` to `.env` and configure your environment variables:
+```bash
+cp .env.example .env
+```
 
 ## Usage
 
@@ -66,7 +70,38 @@ uvicorn main:app --reload
 
 ## Password Reset Functionality
 
-The password reset system will attempt to send emails using the configured SMTP settings. For this to work, make sure to set up the email environment variables properly (`EMAIL_USER`, `EMAIL_PASSWORD`, etc.). 
+The password reset system sends emails using the configured SMTP settings. For this to work, make sure to set up the email environment variables properly.
+
+### Setting Up Email for Password Reset
+
+#### For Gmail Users:
+
+1. Use your Gmail address for `EMAIL_USER`
+2. For `EMAIL_PASSWORD`, you need to use an "App Password" (not your regular Gmail password):
+   - Go to your Google Account settings: [https://myaccount.google.com/](https://myaccount.google.com/)
+   - Enable 2-Step Verification if not already enabled
+   - Go to "Security" > "App passwords"
+   - Select "Mail" as the app and "Other" as the device (name it "Stock Market App")
+   - Copy the generated 16-character password and use it for `EMAIL_PASSWORD`
+
+#### For Other Email Providers:
+
+1. Use your email address for `EMAIL_USER`
+2. Use your email password for `EMAIL_PASSWORD`
+3. Update `EMAIL_HOST` and `EMAIL_PORT` according to your provider's SMTP settings
+
+#### For Deployment on Render.com:
+
+1. Go to your service dashboard on Render
+2. Navigate to "Environment" tab
+3. Add all the required environment variables:
+   - `EMAIL_HOST`
+   - `EMAIL_PORT`
+   - `EMAIL_USER`
+   - `EMAIL_PASSWORD`
+   - `EMAIL_FROM`
+   - `BASE_URL` (set to your Render deployment URL)
+4. Click "Save Changes" and wait for your service to redeploy
 
 If email credentials are not configured, the system will log the password reset links instead of sending emails, which is useful for development and testing.
 

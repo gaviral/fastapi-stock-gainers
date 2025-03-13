@@ -15,16 +15,21 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from app.db import create_db_and_tables, get_async_session, Stock, User, PasswordReset
 from app.auth import fastapi_users, auth_backend, current_active_user, get_user_manager
 
-# Configure logging - console only
+# Configure logging - both console and file
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler()
+        logging.StreamHandler(),
+        logging.FileHandler("stocks.log")
     ]
 )
 logger = logging.getLogger(__name__)
@@ -36,6 +41,9 @@ EMAIL_USER = os.getenv("EMAIL_USER", "")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "")
 EMAIL_FROM = os.getenv("EMAIL_FROM", "noreply@stockmarket.com")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+
+# Log email configuration
+logger.info(f"Email configuration: HOST={EMAIL_HOST}, PORT={EMAIL_PORT}, USER={EMAIL_USER}, FROM={EMAIL_FROM}")
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -284,11 +292,14 @@ async def forgot_password_post(
     user_manager = Depends(get_user_manager)
 ):
     """Process forgot password request and send reset link."""
+    logger.info(f"Password reset requested for email: {email}")
+    
     # Check if user exists
     user_query = await session.execute(select(User).where(User.email == email))
     user = user_query.scalars().first()
     
     if user:
+        logger.info(f"User found for email: {email}, generating reset token")
         # Generate reset token
         token = secrets.token_urlsafe(32)
         
@@ -301,18 +312,21 @@ async def forgot_password_post(
         
         if existing_reset:
             # Update existing token
+            logger.info(f"Updating existing reset token for user: {email}")
             existing_reset.token = token
             existing_reset.created_at = datetime.now()
         else:
             # Create new token
+            logger.info(f"Creating new reset token for user: {email}")
             reset = PasswordReset(user_id=user.id, token=token)
             session.add(reset)
         
         await session.commit()
+        logger.info(f"Reset token saved to database for user: {email}")
         
         # Create reset link
         reset_link = f"{BASE_URL}/reset-password?token={token}"
-        logger.info(f"Password reset token generated for {email}: {token}")
+        logger.info(f"Password reset link generated: {reset_link}")
         
         # Email content
         subject = "Password Reset - Stock Market Tracker"
@@ -331,7 +345,13 @@ async def forgot_password_post(
         """
         
         # Try to send email
+        logger.info(f"Attempting to send password reset email to: {email}")
         email_sent = await send_email(email, subject, html_content)
+        
+        if email_sent:
+            logger.info(f"Password reset email sent successfully to: {email}")
+        else:
+            logger.warning(f"Failed to send password reset email to: {email}. Check email configuration.")
         
         return templates.TemplateResponse(
             "forgot_password.html", 
@@ -340,6 +360,8 @@ async def forgot_password_post(
                 "success": "If an account exists with that email, password reset instructions have been sent. Please check your inbox."
             }
         )
+    else:
+        logger.info(f"No user found for email: {email}, returning generic success message")
     
     # Always return a success message even if email is not found for security
     return templates.TemplateResponse(
@@ -383,8 +405,11 @@ async def reset_password_post(
     user_manager = Depends(get_user_manager)
 ):
     """Process password reset request."""
+    logger.info(f"Processing password reset with token: {token[:8]}...")
+    
     # Verify passwords match
     if password != confirm_password:
+        logger.warning("Password reset failed: Passwords do not match")
         return templates.TemplateResponse(
             "reset_password.html", 
             {"request": request, "token": token, "error": "Passwords do not match."},
@@ -398,6 +423,7 @@ async def reset_password_post(
     reset = reset_query.scalars().first()
     
     if not reset:
+        logger.warning(f"Password reset failed: Invalid or expired token: {token[:8]}...")
         return templates.TemplateResponse(
             "reset_password.html", 
             {"request": request, "error": "Invalid or expired token. Please request a new password reset."},
@@ -409,11 +435,14 @@ async def reset_password_post(
     user = user_query.scalars().first()
     
     if not user:
+        logger.error(f"Password reset failed: User not found for token: {token[:8]}...")
         return templates.TemplateResponse(
             "reset_password.html", 
             {"request": request, "error": "User not found."},
             status_code=400
         )
+    
+    logger.info(f"Valid reset token for user: {user.email}, updating password")
     
     # Update password
     try:
@@ -426,10 +455,12 @@ async def reset_password_post(
         await session.delete(reset)
         await session.commit()
         
+        logger.info(f"Password reset successful for user: {user.email}")
+        
         # Redirect to login page with success message
         return RedirectResponse(url="/login?success=Password+reset+successful.+Please+log+in+with+your+new+password.", status_code=303)
     except Exception as e:
-        logger.error(f"Password reset error: {str(e)}")
+        logger.error(f"Password reset error for user {user.email}: {str(e)}")
         return templates.TemplateResponse(
             "reset_password.html", 
             {"request": request, "token": token, "error": str(e)},
@@ -457,6 +488,7 @@ async def send_email(to_email: str, subject: str, html_content: str) -> bool:
         logger.info(f"Email credentials not configured. Would send email to {to_email} with subject: {subject}")
         logger.info(f"Email content: {html_content}")
         logger.info(f"To enable email sending, configure EMAIL_USER and EMAIL_PASSWORD environment variables.")
+        logger.info(f"See README.md for detailed instructions on setting up email functionality.")
         return False
     
     try:
@@ -470,14 +502,31 @@ async def send_email(to_email: str, subject: str, html_content: str) -> bool:
         html_part = MIMEText(html_content, "html")
         message.attach(html_part)
         
+        # Log connection attempt
+        logger.info(f"Attempting to connect to SMTP server {EMAIL_HOST}:{EMAIL_PORT}")
+        
         # Send email
         with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            logger.info(f"Connected to SMTP server, initiating TLS")
             server.starttls()
+            logger.info(f"TLS initiated, attempting login with user {EMAIL_USER}")
             server.login(EMAIL_USER, EMAIL_PASSWORD)
+            logger.info(f"Login successful, sending email")
             server.sendmail(EMAIL_FROM, to_email, message.as_string())
         
         logger.info(f"Email sent successfully to {to_email}")
         return True
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"SMTP Authentication Error: {str(e)}")
+        logger.error("This usually means your email or password is incorrect.")
+        logger.error("If using Gmail, make sure you're using an App Password, not your regular password.")
+        logger.error("See README.md for instructions on setting up an App Password.")
+        return False
+    except smtplib.SMTPException as e:
+        logger.error(f"SMTP Error: {str(e)}")
+        logger.error(f"Check your EMAIL_HOST and EMAIL_PORT settings: {EMAIL_HOST}:{EMAIL_PORT}")
+        return False
     except Exception as e:
         logger.error(f"Failed to send email: {str(e)}")
+        logger.error(f"Email configuration: HOST={EMAIL_HOST}, PORT={EMAIL_PORT}, USER={EMAIL_USER}, FROM={EMAIL_FROM}")
         return False 
