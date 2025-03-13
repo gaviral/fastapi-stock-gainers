@@ -69,6 +69,7 @@
             <ul>
                 <li>View real-time stock market data with automatic updates every 120 seconds</li>
                 <li>Create an account and log in securely</li>
+                <li>Recover forgotten passwords via email</li>
                 <li>Track custom stock symbols that interest them</li>
                 <li>Monitor market changes with color-coded visual indicators</li>
             </ul>
@@ -112,6 +113,7 @@
                         <li>JWT Tokens</li>
                         <li>Secure Password Hashing</li>
                         <li>Session Management</li>
+                        <li>Password Recovery</li>
                     </ul>
                 </div>
                 <div class="col-md-3 mb-4">
@@ -160,6 +162,7 @@
                     participant App as FastAPI App
                     participant Auth as Auth System
                     participant DB as Database
+                    participant Email as Email Service
                     
                     User->>App: Access Protected Route
                     App->>Auth: Verify Authentication
@@ -167,6 +170,15 @@
                     DB-->>Auth: User Data
                     Auth-->>App: Authentication Result
                     App-->>User: Protected Content or Login Redirect
+                    
+                    User->>App: Request Password Reset
+                    App->>DB: Generate & Store Reset Token
+                    App->>Email: Send Reset Link (if in production)
+                    App-->>User: Confirmation & Reset Link (if in local mode)
+                    
+                    User->>App: Submit New Password
+                    App->>DB: Validate Token & Update Password
+                    App-->>User: Password Reset Confirmation
             </div>
         </div>
         
@@ -189,6 +201,8 @@
                     templates --> login[Login Page]
                     templates --> signup[Signup Page]
                     templates --> about[About Page]
+                    templates --> forgot[Forgot Password Page]
+                    templates --> reset[Reset Password Page]
                     end
                     
                     Backend --> Frontend

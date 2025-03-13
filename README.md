@@ -37,6 +37,7 @@ uvicorn main:app --reload
 
 - Register a new account at `/signup`
 - Login at `/login`
+- Reset forgotten passwords at `/forgot-password`
 - Once logged in, you can add custom stock symbols to track
 
 ## API Endpoints
@@ -44,6 +45,8 @@ uvicorn main:app --reload
 - `/` - Main page with stock data
 - `/login` - Login page
 - `/signup` - Signup page
+- `/forgot-password` - Forgot password page
+- `/reset-password` - Reset password page with token validation
 - `/auth/jwt/login` - JWT login endpoint
 - `/auth/jwt/logout` - JWT logout endpoint
 - `/add-stock` - Add a custom stock symbol (POST)
