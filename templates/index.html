@@ -69,7 +69,7 @@
                     {% if user %}
                         <div class="user-info">
                             <span>{{ user.email }}</span>
-                            <a href="/auth/jwt/logout?redirect_url=/" class="btn btn-outline-secondary btn-sm">Logout</a>
+                            <a href="/logout" class="btn btn-outline-secondary btn-sm">Logout</a>
                         </div>
                     {% else %}
                         <a href="/login" class="btn btn-outline-primary btn-sm">Login</a>

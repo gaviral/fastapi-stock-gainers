@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logging Out</title>
+    <script>
+        function submitForm() {
+            var form = document.getElementById('logoutForm');
+            
+            // Create a new XMLHttpRequest to perform the logout
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/auth/jwt/logout', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            
+            xhr.onload = function() {
+                // Redirect to home page after successful logout
+                window.location.href = '/';
+            };
+            
+            xhr.onerror = function() {
+                // Still redirect to home page even if there's an error
+                window.location.href = '/';
+            };
+            
+            // Submit the form data
+            var formData = 'redirect_url=/';
+            xhr.send(formData);
+            
+            // Prevent the actual form from submitting
+            return false;
+        }
+        
+        // Submit the form when the page loads
+        window.onload = function() {
+            submitForm();
+        };
+    </script>
+</head>
+<body>
+    <h2>Logging Out...</h2>
+    <p>Please wait while we log you out.</p>
+    
+    <form id="logoutForm" action="/auth/jwt/logout" method="post" onsubmit="return submitForm()">
+        <input type="hidden" name="redirect_url" value="/">
+    </form>
+</body>
+</html> 

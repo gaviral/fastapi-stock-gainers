@@ -178,6 +178,14 @@ def login_page(request: Request, error: str = None):
 def signup_page(request: Request):
     return templates.TemplateResponse("signup.html", {"request": request})
 
+@app.get("/logout")
+def logout_page(request: Request):
+    """Custom logout page that will submit a POST request to the FastAPI Users logout endpoint."""
+    return templates.TemplateResponse(
+        "logout.html", 
+        {"request": request, "redirect_url": "/"}
+    )
+
 @app.post("/signup")
 async def signup_post(
     request: Request,
