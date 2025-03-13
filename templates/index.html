@@ -1,70 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Market</title>
-    <!-- Auto-refresh the page every 120 seconds to stay under Yahoo Finance's rate limit -->
     <meta http-equiv="refresh" content="120">
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .negative { background-color: rgba(255, 200, 200, 0.5); }
-        .positive { background-color: rgba(200, 255, 200, 0.5); }
-        .header-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-            margin-bottom: 20px;
-        }
-        .last-updated {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        .table-container {
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .auth-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .custom-stock-form {
-            max-width: 400px;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-        }
-        .user-symbols {
-            max-width: 400px;
-            margin: 20px auto;
-        }
+        .negative{background-color:rgba(255,200,200,.5)}.positive{background-color:rgba(200,255,200,.5)}
+        .header-container{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background-color:#f8f9fa;border-bottom:1px solid #dee2e6;margin-bottom:20px}
+        .last-updated{font-size:.9rem;color:#6c757d}
+        .table-container{max-height:80vh;overflow-y:auto}
+        .auth-buttons{display:flex;gap:10px}
+        .user-info{display:flex;align-items:center;gap:15px}
+        .custom-stock-form{max-width:400px;margin:20px auto;padding:15px;background-color:#f8f9fa;border-radius:5px;box-shadow:0 0 5px rgba(0,0,0,.1)}
+        .user-symbols{max-width:400px;margin:20px auto}
     </style>
 </head>
 <body>
     <div class="container-fluid">
-        <!-- Header with title, last updated time, and refresh button -->
+        <!-- Header -->
         <div class="header-container">
             <h1 class="h2 mb-0">Stock Market</h1>
             <div class="d-flex align-items-center">
                 <span class="last-updated me-3">Last updated: <strong>{{ last_update }}</strong></span>
-                <button class="btn btn-primary" onclick="window.location.reload()">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
+                <button class="btn btn-primary" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i></button>
                 
-                <!-- Authentication buttons -->
+                <!-- Auth buttons -->
                 <div class="auth-buttons ms-3">
                     {% if user %}
                         <div class="user-info">
@@ -77,14 +40,11 @@
                     {% endif %}
                 </div>
                 
-                <!-- About link -->
-                <a href="/about" class="btn btn-outline-info btn-sm ms-2">
-                    <i class="fas fa-info-circle"></i> About
-                </a>
+                <a href="/about" class="btn btn-outline-info btn-sm ms-2"><i class="fas fa-info-circle"></i> About</a>
             </div>
         </div>
         
-        <!-- Introduction section -->
+        <!-- Intro -->
         <div class="card mb-4">
             <div class="card-body">
                 <h2 class="card-title h4">Track Real-Time Stock Market Data</h2>
@@ -122,7 +82,7 @@
             </div>
         </div>
         
-        <!-- Custom stock form for logged-in users -->
+        <!-- Custom stock form -->
         {% if user %}
             <div class="custom-stock-form">
                 <h4 class="text-center mb-3">Add a Custom Stock Symbol</h4>
@@ -195,7 +155,6 @@
         </div>
     </div>
     
-    <!-- Bootstrap JS (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 
