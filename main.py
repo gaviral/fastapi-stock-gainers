@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Depends
+from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 import yfinance as yf
@@ -193,14 +193,21 @@ async def signup_post(
     user_manager = Depends(get_user_manager)
 ):
     try:
-        await user_manager.create(UserCreate(email=email, password=password, is_active=True))
+        user = await user_manager.create(UserCreate(email=email, password=password, is_active=True))
+        
+        # Log the successful registration
+        logger.info(f"User {email} registered successfully")
+        
+        # Redirect to login page
+        response = RedirectResponse(url="/login", status_code=303)
+        return response
     except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
         return templates.TemplateResponse(
             "signup.html",
             {"request": request, "error": str(e)},
             status_code=400
         )
-    return RedirectResponse("/login", status_code=303)
 
 @app.post("/add-stock")
 async def add_stock(
