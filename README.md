@@ -10,6 +10,7 @@ Visit: [https://fastapi-stock-gainers.onrender.com](https://fastapi-stock-gainer
 
 - Real-time stock market data from Yahoo Finance
 - User authentication system with password recovery
+- Password visibility toggle for improved user experience
 - Ability to track custom stock symbols
 - Automatic sorting by percentage change
 - Color-coded display (green for gains, red for losses)
