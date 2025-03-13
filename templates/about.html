@@ -98,7 +98,8 @@
                     <ul class="list-unstyled">
                         <li>FastAPI</li>
                         <li>SQLAlchemy (ORM)</li>
-                        <li>SQLite Database</li>
+                        <li>SQLite (Development)</li>
+                        <li>PostgreSQL (Production)</li>
                         <li>Pydantic</li>
                     </ul>
                 </div>
@@ -157,16 +158,26 @@
                     Client[Browser Client] -->|HTTP Requests| FastAPI[FastAPI Application]
                     FastAPI -->|Stock Queries| YF[Yahoo Finance API]
                     YF -->|Market Data| FastAPI
-                    FastAPI -->|SQL Queries| DB[(SQLite Database)]
+                    FastAPI -->|SQL Queries| DB[(Database)]
                     DB -->|User Data & Preferences| FastAPI
                     FastAPI -->|HTML Templates| Client
                     FastAPI -->|Email Notifications| Email[Email Service]
                     Admin[Admin Dashboard] -->|Database Management| FastAPI
                     
+                    subgraph Database Options
+                    SQLite[(SQLite<br>Development)]
+                    PostgreSQL[(PostgreSQL<br>Production)]
+                    end
+                    
+                    DB --- SQLite
+                    DB --- PostgreSQL
+                    
                     style Client fill:#f5f5f5,stroke:#333,stroke-width:2px
                     style FastAPI fill:#059DFF,stroke:#333,stroke-width:2px,color:white
                     style YF fill:#FF6B6B,stroke:#333,stroke-width:2px
                     style DB fill:#56C271,stroke:#333,stroke-width:2px,color:white
+                    style SQLite fill:#56C271,stroke:#333,stroke-width:2px,color:white
+                    style PostgreSQL fill:#56C271,stroke:#333,stroke-width:2px,color:white
                     style Email fill:#FFD166,stroke:#333,stroke-width:2px
                     style Admin fill:#9381FF,stroke:#333,stroke-width:2px,color:white
             </div>
@@ -253,10 +264,48 @@
                         <li>Hosted on Render.com</li>
                         <li>Automatic deployment from GitHub repository</li>
                         <li>Environment variables for configuration</li>
-                        <li>Production database connection via URL</li>
+                        <li>PostgreSQL database for persistent data storage</li>
                         <li>Email integration for password resets</li>
                     </ul>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Database Configuration -->
+        <div class="tech-container mb-5">
+            <h2 class="mb-4">Database Configuration</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Development Environment</h4>
+                    <p>During development, the application uses SQLite, a file-based database that's perfect for local testing:</p>
+                    <ul>
+                        <li>Stored in a local file (<code>test.db</code>)</li>
+                        <li>No additional setup required</li>
+                        <li>Data persists between application restarts</li>
+                        <li>Configured via <code>DATABASE_URL</code> environment variable</li>
+                        <li>Default: <code>sqlite+aiosqlite:///./test.db</code></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h4>Production Environment</h4>
+                    <p>In production, the application uses PostgreSQL for robust, persistent data storage:</p>
+                    <ul>
+                        <li>Hosted on Render.com's managed PostgreSQL service</li>
+                        <li>Data persists across deployments and application restarts</li>
+                        <li>Automatic backups and recovery options</li>
+                        <li>Configured via <code>DATABASE_URL</code> environment variable</li>
+                        <li>Format: <code>postgresql+asyncpg://username:password@hostname:port/database_name</code></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-4">
+                <h4>Database Models</h4>
+                <p>The application uses SQLAlchemy ORM with the following models:</p>
+                <ul>
+                    <li><strong>User</strong> - Stores user authentication data (email, hashed password, etc.)</li>
+                    <li><strong>Stock</strong> - Tracks custom stock symbols for each user</li>
+                    <li><strong>PasswordReset</strong> - Manages password reset tokens and expiry times</li>
+                </ul>
             </div>
         </div>
         

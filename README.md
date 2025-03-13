@@ -60,12 +60,26 @@ For production, it's strongly recommended to use a PostgreSQL database:
 #### Setting up PostgreSQL on Render.com:
 
 1. Create a new PostgreSQL database in your Render dashboard
-2. Go to your web service's "Environment" tab
-3. Add the `DATABASE_URL` environment variable with the connection string provided by Render
-4. Ensure the connection string uses the `postgresql+asyncpg://` prefix
-5. Save changes and redeploy your application
+   - Go to the Render dashboard and click "New +"
+   - Select "PostgreSQL"
+   - Fill in the required fields (name, database, user)
+   - Choose an appropriate plan
+   - Click "Create Database"
 
-This ensures your database is persistent across deployments and application restarts.
+2. Once created, Render will provide you with connection details:
+   - Internal Database URL
+   - External Database URL
+   - PSQL Command
+
+3. Go to your web service's "Environment" tab
+   - Add the `DATABASE_URL` environment variable
+   - Use the Internal Database URL if your web service is also on Render
+   - Make sure to prefix the URL with `postgresql+asyncpg://` instead of `postgres://`
+   - Example format: `postgresql+asyncpg://username:password@hostname:5432/database_name`
+
+4. Save changes and redeploy your application
+
+This ensures your database is persistent across deployments and application restarts. Your data will be preserved even when your application is redeployed or restarted.
 
 ## User Authentication
 
