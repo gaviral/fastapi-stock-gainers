@@ -71,6 +71,10 @@ For security reasons, make sure to change the default admin credentials by setti
 - `/auth/jwt/logout` - JWT logout endpoint
 - `/add-stock` - Add a custom stock symbol (POST)
 - `/remove-stock` - Remove a custom stock symbol (POST)
+- `/admin` - Admin login page
+- `/admin/login` - Process admin login (POST)
+- `/admin/dashboard` - Admin dashboard with database management
+- `/admin/logout` - Admin logout
 
 ## Environment Variables
 
@@ -82,6 +86,8 @@ For security reasons, make sure to change the default admin credentials by setti
 - `EMAIL_PASSWORD` - Email password or app password
 - `EMAIL_FROM` - From address for sent emails (default: `noreply@stockmarket.com`)
 - `BASE_URL` - Base URL for the application, used in email links (default: `http://localhost:8000`)
+- `ADMIN_USERNAME` - Username for admin login (default: `admin`)
+- `ADMIN_PASSWORD` - Password for admin login (default: `changeme`)
 
 ## Password Reset Functionality
 

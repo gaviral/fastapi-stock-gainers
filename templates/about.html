@@ -74,6 +74,16 @@
                 <li>Track custom stock symbols that interest them</li>
                 <li>Monitor market changes with color-coded visual indicators</li>
             </ul>
+            <p>
+                For administrators, the application provides:
+            </p>
+            <ul>
+                <li>A secure admin dashboard accessible at <code>/admin</code></li>
+                <li>User management with detailed user information</li>
+                <li>Stock tracking overview across all users</li>
+                <li>Password reset request monitoring</li>
+                <li>Data filtering and search capabilities</li>
+            </ul>
         </div>
         
         <!-- Tech Stack -->
@@ -102,6 +112,7 @@
                         <li>Jinja2 Templates</li>
                         <li>Bootstrap 5</li>
                         <li>Font Awesome</li>
+                        <li>DataTables</li>
                     </ul>
                 </div>
                 <div class="col-md-3 mb-4">
@@ -116,6 +127,7 @@
                         <li>Session Management</li>
                         <li>Password Recovery</li>
                         <li>Password Visibility Toggle</li>
+                        <li>Admin Authentication</li>
                     </ul>
                 </div>
                 <div class="col-md-3 mb-4">
@@ -128,6 +140,7 @@
                         <li>yfinance Library</li>
                         <li>Async Data Processing</li>
                         <li>Real-time Updates</li>
+                        <li>Email Integration</li>
                     </ul>
                 </div>
             </div>
@@ -147,11 +160,15 @@
                     FastAPI -->|SQL Queries| DB[(SQLite Database)]
                     DB -->|User Data & Preferences| FastAPI
                     FastAPI -->|HTML Templates| Client
+                    FastAPI -->|Email Notifications| Email[Email Service]
+                    Admin[Admin Dashboard] -->|Database Management| FastAPI
                     
                     style Client fill:#f5f5f5,stroke:#333,stroke-width:2px
                     style FastAPI fill:#059DFF,stroke:#333,stroke-width:2px,color:white
                     style YF fill:#FF6B6B,stroke:#333,stroke-width:2px
                     style DB fill:#56C271,stroke:#333,stroke-width:2px,color:white
+                    style Email fill:#FFD166,stroke:#333,stroke-width:2px
+                    style Admin fill:#9381FF,stroke:#333,stroke-width:2px,color:white
             </div>
         </div>
         
@@ -193,9 +210,12 @@
                     main[Main App] --> routes[Routes]
                     routes --> auth[Authentication]
                     routes --> stock[Stock Data]
+                    routes --> admin[Admin Routes]
                     auth --> db[Database]
                     stock --> db
+                    admin --> db
                     stock --> yf[Yahoo Finance API]
+                    auth --> email[Email Service]
                     end
                     
                     subgraph Frontend
@@ -205,6 +225,8 @@
                     templates --> about[About Page]
                     templates --> forgot[Forgot Password Page]
                     templates --> reset[Reset Password Page]
+                    templates --> adminLogin[Admin Login]
+                    templates --> adminDash[Admin Dashboard]
                     end
                     
                     Backend --> Frontend
@@ -222,6 +244,7 @@
                         <li>Python 3.11+</li>
                         <li>Async/await for non-blocking operations</li>
                         <li>Virtual environments for dependency management</li>
+                        <li>Environment variables for configuration</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
@@ -231,6 +254,7 @@
                         <li>Automatic deployment from GitHub repository</li>
                         <li>Environment variables for configuration</li>
                         <li>Production database connection via URL</li>
+                        <li>Email integration for password resets</li>
                     </ul>
                 </div>
             </div>
@@ -239,7 +263,7 @@
         <!-- Footer -->
         <footer class="border-top pt-4 pb-5 text-center text-muted">
             <p>This project was built for educational and portfolio purposes.</p>
-            <p>© 2023 Stock Market Tracker</p>
+            <p>© 2023-2025 Stock Market Tracker</p>
         </footer>
     </div>
     
