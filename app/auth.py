@@ -1,5 +1,4 @@
-import os
-import uuid
+import os, uuid
 from fastapi import Depends, Request
 from fastapi_users import FastAPIUsers, BaseUserManager, UUIDIDMixin
 from fastapi_users.db import SQLAlchemyUserDatabase
@@ -9,7 +8,7 @@ from .db import User, get_async_session
 
 SECRET = os.getenv("SECRET_KEY", "CHANGEME")
 
-# Dependency to get the user DB adapter
+# Get user DB adapter
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
     yield SQLAlchemyUserDatabase(session, User)
 
@@ -24,7 +23,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
 
-# Authentication backend: using cookie transport with JWT strategy
+# Authentication setup
 cookie_transport = CookieTransport(
     cookie_name="auth", 
     cookie_max_age=3600,
@@ -41,11 +40,8 @@ auth_backend = AuthenticationBackend(
     get_strategy=get_jwt_strategy,
 )
 
-# Instantiate FastAPIUsers
-fastapi_users = FastAPIUsers[User, uuid.UUID](
-    get_user_manager,
-    [auth_backend]
-)
+# FastAPIUsers instance
+fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 
-# Dependency to retrieve the current active user
+# Current active user dependency
 current_active_user = fastapi_users.current_user(active=True) 
