@@ -9,8 +9,14 @@ from fastapi_users import schemas
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
+import secrets
+from typing import Optional
+import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
-from app.db import create_db_and_tables, get_async_session, Stock, User
+from app.db import create_db_and_tables, get_async_session, Stock, User, PasswordReset
 from app.auth import fastapi_users, auth_backend, current_active_user, get_user_manager
 
 # Configure logging - console only
@@ -22,6 +28,15 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# Environment variables
+IS_LOCAL = os.getenv("IS_LOCAL", "true").lower() == "true"
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USER = os.getenv("EMAIL_USER", "")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "")
+EMAIL_FROM = os.getenv("EMAIL_FROM", "noreply@stockmarket.com")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -257,6 +272,195 @@ async def remove_stock(
     
     return RedirectResponse("/", status_code=303)
 
+@app.get("/forgot-password", response_class=HTMLResponse)
+async def forgot_password(request: Request):
+    """Render the forgot password form."""
+    return templates.TemplateResponse("forgot_password.html", {"request": request, "is_local": IS_LOCAL})
+
+@app.post("/forgot-password", response_class=HTMLResponse)
+async def forgot_password_post(
+    request: Request,
+    email: str = Form(...),
+    session: AsyncSession = Depends(get_async_session),
+    user_manager = Depends(get_user_manager)
+):
+    """Process forgot password request and send reset link."""
+    # Check if user exists
+    user_query = await session.execute(select(User).where(User.email == email))
+    user = user_query.scalars().first()
+    
+    if user:
+        # Generate reset token
+        token = secrets.token_urlsafe(32)
+        
+        # Save token to database with expiry
+        # First, check if there's an existing token for this user
+        reset_query = await session.execute(
+            select(PasswordReset).where(PasswordReset.user_id == user.id)
+        )
+        existing_reset = reset_query.scalars().first()
+        
+        if existing_reset:
+            # Update existing token
+            existing_reset.token = token
+            existing_reset.created_at = datetime.now()
+        else:
+            # Create new token
+            reset = PasswordReset(user_id=user.id, token=token)
+            session.add(reset)
+        
+        await session.commit()
+        
+        # Create reset link
+        reset_link = f"{BASE_URL}/reset-password?token={token}"
+        logger.info(f"Password reset token generated for {email}: {token}")
+        
+        # Email content
+        subject = "Password Reset - Stock Market Tracker"
+        html_content = f"""
+        <html>
+        <body>
+            <h2>Password Reset Request</h2>
+            <p>You have requested to reset your password for the Stock Market Tracker application.</p>
+            <p>Please click the link below to set a new password:</p>
+            <p><a href="{reset_link}">Reset Your Password</a></p>
+            <p>If you did not request this password reset, please ignore this email.</p>
+            <p>This link will expire in 24 hours.</p>
+            <p>Thank you,<br>Stock Market Tracker Team</p>
+        </body>
+        </html>
+        """
+        
+        # Try to send email
+        email_sent = await send_email(email, subject, html_content)
+        
+        if IS_LOCAL:
+            # In local mode, show the reset link directly
+            return templates.TemplateResponse(
+                "forgot_password.html", 
+                {
+                    "request": request, 
+                    "success": f"<strong>Local Mode:</strong> No emails are actually sent in local mode. You can reset your password by clicking here: <a href='{reset_link}'>Reset Password</a>",
+                    "is_local": IS_LOCAL
+                }
+            )
+        else:
+            # In production mode, just confirm the email was sent
+            return templates.TemplateResponse(
+                "forgot_password.html", 
+                {
+                    "request": request, 
+                    "success": "Password reset instructions have been sent to your email. Please check your inbox and follow the instructions to reset your password.",
+                    "is_local": IS_LOCAL
+                }
+            )
+    
+    # Always return a success message even if email is not found for security
+    if IS_LOCAL:
+        return templates.TemplateResponse(
+            "forgot_password.html", 
+            {
+                "request": request, 
+                "success": "<strong>Local Mode:</strong> If an account exists with that email, a reset link would be sent. No actual emails are sent in local mode.",
+                "is_local": IS_LOCAL
+            }
+        )
+    else:
+        return templates.TemplateResponse(
+            "forgot_password.html", 
+            {
+                "request": request, 
+                "success": "If an account exists with that email, password reset instructions have been sent. Please check your inbox.",
+                "is_local": IS_LOCAL
+            }
+        )
+
+@app.get("/reset-password", response_class=HTMLResponse)
+async def reset_password(
+    request: Request,
+    token: str,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """Render the reset password form."""
+    # Verify token exists and is not expired
+    reset_query = await session.execute(
+        select(PasswordReset).where(PasswordReset.token == token)
+    )
+    reset = reset_query.scalars().first()
+    
+    if not reset:
+        return templates.TemplateResponse(
+            "reset_password.html", 
+            {"request": request, "error": "Invalid or expired token. Please request a new password reset."},
+            status_code=400
+        )
+    
+    # Token is valid, render the form
+    return templates.TemplateResponse("reset_password.html", {"request": request, "token": token})
+
+@app.post("/reset-password", response_class=HTMLResponse)
+async def reset_password_post(
+    request: Request,
+    token: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    session: AsyncSession = Depends(get_async_session),
+    user_manager = Depends(get_user_manager)
+):
+    """Process password reset request."""
+    # Verify passwords match
+    if password != confirm_password:
+        return templates.TemplateResponse(
+            "reset_password.html", 
+            {"request": request, "token": token, "error": "Passwords do not match."},
+            status_code=400
+        )
+    
+    # Verify token exists and is not expired
+    reset_query = await session.execute(
+        select(PasswordReset).where(PasswordReset.token == token)
+    )
+    reset = reset_query.scalars().first()
+    
+    if not reset:
+        return templates.TemplateResponse(
+            "reset_password.html", 
+            {"request": request, "error": "Invalid or expired token. Please request a new password reset."},
+            status_code=400
+        )
+    
+    # Get user
+    user_query = await session.execute(select(User).where(User.id == reset.user_id))
+    user = user_query.scalars().first()
+    
+    if not user:
+        return templates.TemplateResponse(
+            "reset_password.html", 
+            {"request": request, "error": "User not found."},
+            status_code=400
+        )
+    
+    # Update password
+    try:
+        await user_manager.update(
+            user_update={"password": password},
+            user=user
+        )
+        
+        # Delete reset token
+        await session.delete(reset)
+        await session.commit()
+        
+        # Redirect to login page with success message
+        return RedirectResponse(url="/login?success=Password+reset+successful.+Please+log+in+with+your+new+password.", status_code=303)
+    except Exception as e:
+        logger.error(f"Password reset error: {str(e)}")
+        return templates.TemplateResponse(
+            "reset_password.html", 
+            {"request": request, "token": token, "error": str(e)},
+            status_code=400
+        )
+
 @app.on_event("startup")
 async def on_startup():
     await create_db_and_tables()
@@ -264,4 +468,39 @@ async def on_startup():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    logger.info("Stock Market Movers application shutting down") 
+    logger.info("Stock Market Movers application shutting down")
+
+# Function to send emails
+async def send_email(to_email: str, subject: str, html_content: str) -> bool:
+    """
+    Send an email with the given parameters.
+    Returns True if successful, False otherwise.
+    """
+    if IS_LOCAL or not EMAIL_USER or not EMAIL_PASSWORD:
+        # In local mode or without credentials, just log the email
+        logger.info(f"Would send email to {to_email} with subject: {subject}")
+        logger.info(f"Email content: {html_content}")
+        return False
+    
+    try:
+        # Create message
+        message = MIMEMultipart("alternative")
+        message["Subject"] = subject
+        message["From"] = EMAIL_FROM
+        message["To"] = to_email
+        
+        # Add HTML content
+        html_part = MIMEText(html_content, "html")
+        message.attach(html_part)
+        
+        # Send email
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_FROM, to_email, message.as_string())
+        
+        logger.info(f"Email sent successfully to {to_email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send email: {str(e)}")
+        return False 
