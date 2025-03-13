@@ -173,17 +173,22 @@ async def get_stock_data(
 def login_page(request: Request, error: str = None):
     return templates.TemplateResponse("login.html", {"request": request, "error": error})
 
-@app.get("/signup")
-def signup_page(request: Request):
+@app.get("/signup", response_class=HTMLResponse)
+async def signup(request: Request):
     return templates.TemplateResponse("signup.html", {"request": request})
 
-@app.get("/logout")
-def logout_page(request: Request):
+@app.get("/logout", response_class=HTMLResponse)
+async def logout(request: Request):
     """Custom logout page that will submit a POST request to the FastAPI Users logout endpoint."""
     return templates.TemplateResponse(
         "logout.html", 
         {"request": request, "redirect_url": "/"}
     )
+
+@app.get("/about", response_class=HTMLResponse)
+async def about(request: Request):
+    """Render the about page with tech stack and architecture information."""
+    return templates.TemplateResponse("about.html", {"request": request})
 
 @app.post("/signup")
 async def signup_post(

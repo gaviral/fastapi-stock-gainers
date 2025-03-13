@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Stock Market Tracker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Mermaid JS for diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral'
+        });
+    </script>
+    <style>
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .tech-container {
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .diagram-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .tech-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with links back to main page -->
+        <div class="header-container">
+            <h1 class="h2 mb-0">About This Project</h1>
+            <a href="/" class="btn btn-outline-primary">
+                <i class="fas fa-home"></i> Back to Stock Market
+            </a>
+        </div>
+        
+        <!-- Project Overview -->
+        <div class="tech-container mb-4">
+            <h2 class="mb-4">Project Overview</h2>
+            <p class="lead">
+                The Stock Market Tracker is a full-stack web application designed to display real-time stock market data, including top gainers and losers. 
+                This project demonstrates modern web development practices with a focus on real-time data processing, user authentication, and responsive design.
+            </p>
+            <p>
+                The application allows users to:
+            </p>
+            <ul>
+                <li>View real-time stock market data with automatic updates</li>
+                <li>Create an account and log in securely</li>
+                <li>Track custom stock symbols that interest them</li>
+                <li>Monitor market changes with color-coded visual indicators</li>
+            </ul>
+        </div>
+        
+        <!-- Tech Stack -->
+        <div class="tech-container">
+            <h2 class="mb-4">Tech Stack</h2>
+            <div class="row text-center">
+                <div class="col-md-3 mb-4">
+                    <div class="tech-icon text-primary">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h4>Backend</h4>
+                    <ul class="list-unstyled">
+                        <li>FastAPI</li>
+                        <li>SQLAlchemy (ORM)</li>
+                        <li>SQLite Database</li>
+                        <li>Pydantic</li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="tech-icon text-success">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    <h4>Frontend</h4>
+                    <ul class="list-unstyled">
+                        <li>HTML5/CSS3</li>
+                        <li>Jinja2 Templates</li>
+                        <li>Bootstrap 5</li>
+                        <li>Font Awesome</li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="tech-icon text-info">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Authentication</h4>
+                    <ul class="list-unstyled">
+                        <li>FastAPI Users</li>
+                        <li>JWT Tokens</li>
+                        <li>Secure Password Hashing</li>
+                        <li>Session Management</li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="tech-icon text-warning">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Data</h4>
+                    <ul class="list-unstyled">
+                        <li>Yahoo Finance API</li>
+                        <li>yfinance Library</li>
+                        <li>Async Data Processing</li>
+                        <li>Real-time Updates</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Architecture Diagrams -->
+        <h2 class="mb-4">Architecture Diagrams</h2>
+        
+        <!-- System Architecture -->
+        <div class="diagram-container">
+            <h4>System Architecture</h4>
+            <div class="mermaid">
+                graph TD
+                    Client[Browser Client] -->|HTTP Requests| FastAPI[FastAPI Application]
+                    FastAPI -->|Stock Queries| YF[Yahoo Finance API]
+                    YF -->|Market Data| FastAPI
+                    FastAPI -->|SQL Queries| DB[(SQLite Database)]
+                    DB -->|User Data & Preferences| FastAPI
+                    FastAPI -->|HTML Templates| Client
+                    
+                    style Client fill:#f5f5f5,stroke:#333,stroke-width:2px
+                    style FastAPI fill:#059DFF,stroke:#333,stroke-width:2px,color:white
+                    style YF fill:#FF6B6B,stroke:#333,stroke-width:2px
+                    style DB fill:#56C271,stroke:#333,stroke-width:2px,color:white
+            </div>
+        </div>
+        
+        <!-- Data Flow -->
+        <div class="diagram-container">
+            <h4>Authentication Flow</h4>
+            <div class="mermaid">
+                sequenceDiagram
+                    participant User as User
+                    participant App as FastAPI App
+                    participant Auth as Auth System
+                    participant DB as Database
+                    
+                    User->>App: Access Protected Route
+                    App->>Auth: Verify Authentication
+                    Auth->>DB: Check User Credentials
+                    DB-->>Auth: User Data
+                    Auth-->>App: Authentication Result
+                    App-->>User: Protected Content or Login Redirect
+            </div>
+        </div>
+        
+        <!-- Component Architecture -->
+        <div class="diagram-container">
+            <h4>Component Architecture</h4>
+            <div class="mermaid">
+                flowchart TD
+                    subgraph Backend
+                    main[Main App] --> routes[Routes]
+                    routes --> auth[Authentication]
+                    routes --> stock[Stock Data]
+                    auth --> db[Database]
+                    stock --> db
+                    stock --> yf[Yahoo Finance API]
+                    end
+                    
+                    subgraph Frontend
+                    templates[Jinja Templates] --> index[Index Page]
+                    templates --> login[Login Page]
+                    templates --> signup[Signup Page]
+                    templates --> about[About Page]
+                    end
+                    
+                    Backend --> Frontend
+            </div>
+        </div>
+        
+        <!-- Development & Deployment -->
+        <div class="tech-container mb-5">
+            <h2 class="mb-4">Development & Deployment</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Development Tools</h4>
+                    <ul>
+                        <li>Git & GitHub for version control</li>
+                        <li>Python 3.11+</li>
+                        <li>Async/await for non-blocking operations</li>
+                        <li>Virtual environments for dependency management</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h4>Deployment</h4>
+                    <ul>
+                        <li>Hosted on Render.com</li>
+                        <li>Automatic deployment from GitHub repository</li>
+                        <li>Environment variables for configuration</li>
+                        <li>Production database connection via URL</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="border-top pt-4 pb-5 text-center text-muted">
+            <p>This project was built for educational and portfolio purposes.</p>
+            <p>© 2023 Stock Market Tracker</p>
+        </footer>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
