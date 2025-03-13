@@ -70,7 +70,6 @@ TICKERS = [
   "V",     # Visa
   "MA",    # Mastercard
   "PYPL",  # PayPal
-  "SQ",    # Block (Square)
   "COIN"   # Coinbase
 ]
 
