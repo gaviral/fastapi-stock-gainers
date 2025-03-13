@@ -1,13 +1,18 @@
-<<<<<<< HEAD
 # FastAPI Stock Gainers
 
 A web application that displays real-time stock market data, including top gainers and losers. Built with FastAPI, SQLAlchemy, and Yahoo Finance API.
+
+## Live Demo
+
+Visit: [https://fastapi-stock-gainers.onrender.com](https://fastapi-stock-gainers.onrender.com)
 
 ## Features
 
 - Real-time stock market data from Yahoo Finance
 - User authentication system
 - Ability to track custom stock symbols
+- Automatic sorting by percentage change
+- Color-coded display (green for gains, red for losses)
 - Responsive UI with Bootstrap
 - Auto-refresh to keep data updated
 
@@ -51,27 +56,4 @@ uvicorn main:app --reload
 
 ## License
 
-MIT 
-||||||| 12305e0
-=======
-# Stock Market Tracker
-
-A simple web application that displays real-time stock market data.
-
-## Live Demo
-
-Visit: [https://fastapi-stock-gainers.onrender.com](https://fastapi-stock-gainers.onrender.com)
-
-## Features
-
-- Real-time stock data from Yahoo Finance
-- Automatic sorting by percentage change
-- Color-coded display (green for gains, red for losses)
-- Responsive design with Bootstrap
-
-## Setup
-
-1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run the app: `uvicorn main:app --reload` 
->>>>>>> origin/main
+MIT
