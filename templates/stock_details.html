@@ -249,10 +249,10 @@
                         <div>
                             <span class="text-sm text-gray-500 dark:text-gray-400">Volume</span>
                             <p class="text-xl font-semibold text-gray-900 dark:text-white mt-1">
-                                {{ '{:,}'.format(stock_info.latest_volume) }}
+                                {{ stock_info.formatted_latest_volume }}
                             </p>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Avg Volume: {{ '{:,}'.format(stock_info.avg_volume_period|int) }}
+                                Avg Volume: {{ stock_info.formatted_avg_volume }}
                             </p>
                         </div>
                     </div>
@@ -337,7 +337,7 @@
                             <span class="text-sm text-gray-500 dark:text-gray-400">Avg. Volume</span>
                             <p class="text-lg font-semibold text-gray-900 dark:text-white">
                                 {% if stock_info.avg_volume != 'N/A' %}
-                                    {{ '{:,}'.format(stock_info.avg_volume) }}
+                                    {{ stock_info.formatted_avg_volume }}
                                 {% else %}
                                     N/A
                                 {% endif %}

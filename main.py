@@ -104,12 +104,13 @@ def log_user_interaction(action_type, action_details, user=None):
     logger.info(f"User Interaction: {action_type} - User: {user_id} - Details: {action_details}")
 
 # Function to format monetary values
-def format_monetary_value(value):
+def format_monetary_value(value, include_dollar_sign=True):
     """
-    Format monetary values to use M for millions and B for billions with 2 decimal places.
+    Format monetary values or volume values to use M for millions and B for billions with 2 decimal places.
     
     Args:
         value: The numeric value to format
+        include_dollar_sign: Whether to include a dollar sign (for monetary values)
         
     Returns:
         Formatted string with M for millions, B for billions, limited to 2 decimal places
@@ -122,12 +123,13 @@ def format_monetary_value(value):
         value = float(value)
         
         # Format based on magnitude
+        prefix = "$" if include_dollar_sign else ""
         if value >= 1_000_000_000:  # Billions
-            return f"${value / 1_000_000_000:.2f}B"
+            return f"{prefix}{value / 1_000_000_000:.2f}B"
         elif value >= 1_000_000:  # Millions
-            return f"${value / 1_000_000:.2f}M"
+            return f"{prefix}{value / 1_000_000:.2f}M"
         else:
-            return f"${value:.2f}"
+            return f"{prefix}{value:.2f}"
     except (ValueError, TypeError):
         return str(value)
 
@@ -204,7 +206,7 @@ async def get_stock_data(
         for stock in stock_list:
             stock["formatted_price"] = format_monetary_value(stock["price"])
             stock["formatted_market_cap"] = format_monetary_value(stock["market_cap"])
-            stock["formatted_volume"] = format_monetary_value(stock["volume"]) if stock["volume"] else "N/A"
+            stock["formatted_volume"] = format_monetary_value(stock["volume"], False)
             stock["formatted_52_week_low"] = format_monetary_value(stock["fifty_two_week_low"])
             stock["formatted_52_week_high"] = format_monetary_value(stock["fifty_two_week_high"])
             stock["formatted_prev_close"] = format_monetary_value(stock["prev_close"])
@@ -703,8 +705,8 @@ async def get_stock_chart(request: Request, symbol: str, period: str = "1y", use
             stock_info["formatted_period_low"] = format_monetary_value(stock_info["period_low"])
             stock_info["formatted_fifty_two_week_high"] = format_monetary_value(stock_info["fifty_two_week_high"])
             stock_info["formatted_fifty_two_week_low"] = format_monetary_value(stock_info["fifty_two_week_low"])
-            stock_info["formatted_latest_volume"] = format_monetary_value(stock_info["latest_volume"])
-            stock_info["formatted_avg_volume"] = format_monetary_value(stock_info["avg_volume"])
+            stock_info["formatted_latest_volume"] = format_monetary_value(stock_info["latest_volume"], False)
+            stock_info["formatted_avg_volume"] = format_monetary_value(stock_info["avg_volume"], False)
             stock_info["formatted_ma50"] = format_monetary_value(stock_info["ma50"])
             stock_info["formatted_ma200"] = format_monetary_value(stock_info["ma200"])
             
@@ -733,8 +735,8 @@ async def get_stock_chart(request: Request, symbol: str, period: str = "1y", use
                 "formatted_period_low": format_monetary_value(period_low),
                 "formatted_fifty_two_week_high": format_monetary_value(period_high),
                 "formatted_fifty_two_week_low": format_monetary_value(period_low),
-                "formatted_latest_volume": format_monetary_value(latest_volume),
-                "formatted_avg_volume": format_monetary_value(avg_volume),
+                "formatted_latest_volume": format_monetary_value(latest_volume, False),
+                "formatted_avg_volume": format_monetary_value(avg_volume, False),
                 "formatted_ma50": format_monetary_value(ma50),
                 "formatted_ma200": format_monetary_value(ma200)
             }
