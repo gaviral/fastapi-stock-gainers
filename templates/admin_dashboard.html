@@ -3,122 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Stock Market</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin Dashboard - Stock Market Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Iconify for icons -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3f37c9',
+                        success: '#4cc9f0',
+                        danger: '#f72585',
+                        warning: '#f8961e',
+                        info: '#4895ef',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body {
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="header">
-            <h1>Admin Dashboard - Raw User Data</h1>
-            <a href="/admin/logout" class="btn btn-danger">Logout</a>
-        </div>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div x-data="{ 
+            mobileMenuOpen: false, 
+            darkMode: localStorage.getItem('darkMode') === 'true',
+            activeTab: 'users'
+        }" 
+        x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))"
+        :class="{ 'dark': darkMode }">
+        
+        <!-- Admin Header/Navigation -->
+        <nav class="bg-primary text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <iconify-icon icon="mdi:shield-account" class="text-white text-3xl mr-2"></iconify-icon>
+                            <span class="font-bold text-white text-xl">Admin Dashboard</span>
+                        </div>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+                        <!-- Dark Mode Toggle -->
+                        <button @click="darkMode = !darkMode" class="p-1 rounded-full text-white hover:bg-primary-dark focus:outline-none">
+                            <span x-show="!darkMode">
+                                <iconify-icon icon="mdi:moon" class="h-6 w-6"></iconify-icon>
+                            </span>
+                            <span x-show="darkMode">
+                                <iconify-icon icon="mdi:sun" class="h-6 w-6"></iconify-icon>
+                            </span>
+                        </button>
+                        
+                        <!-- Admin Actions -->
+                        <a href="/admin/logout" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-secondary focus:outline-none">
+                            <span class="flex items-center">
+                                <iconify-icon icon="mdi:logout" class="h-5 w-5 mr-1"></iconify-icon>
+                                Sign Out
+                            </span>
+                        </a>
+                    </div>
+                    <div class="-mr-2 flex items-center sm:hidden">
+                        <!-- Mobile menu button -->
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-secondary focus:outline-none">
+                            <span x-show="!mobileMenuOpen">
+                                <iconify-icon icon="mdi:menu" class="h-6 w-6"></iconify-icon>
+                            </span>
+                            <span x-show="mobileMenuOpen">
+                                <iconify-icon icon="mdi:close" class="h-6 w-6"></iconify-icon>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Email</th>
-                        <th>Active</th>
-                        <th>Superuser</th>
-                        <th>Verified</th>
-                        <th>Hashed Password</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in raw_users %}
-                    <tr>
-                        <td>{{ user.id }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.is_active }}</td>
-                        <td>{{ user.is_superuser }}</td>
-                        <td>{{ user.is_verified }}</td>
-                        <td>{{ user.hashed_password }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+            <!-- Mobile menu -->
+            <div x-show="mobileMenuOpen" class="sm:hidden" x-cloak>
+                <div class="pt-2 pb-3 space-y-1 px-4">
+                    <button @click="activeTab = 'users'" class="w-full text-left px-3 py-2 rounded-md text-white hover:bg-secondary focus:outline-none">
+                        <span class="flex items-center">
+                            <iconify-icon icon="mdi:account-group" class="h-5 w-5 mr-2"></iconify-icon>
+                            User Management
+                        </span>
+                    </button>
+                    <button @click="activeTab = 'stocks'" class="w-full text-left px-3 py-2 rounded-md text-white hover:bg-secondary focus:outline-none">
+                        <span class="flex items-center">
+                            <iconify-icon icon="mdi:chart-line" class="h-5 w-5 mr-2"></iconify-icon>
+                            Stock Tracking
+                        </span>
+                    </button>
+                    <button @click="activeTab = 'resets'" class="w-full text-left px-3 py-2 rounded-md text-white hover:bg-secondary focus:outline-none">
+                        <span class="flex items-center">
+                            <iconify-icon icon="mdi:key-change" class="h-5 w-5 mr-2"></iconify-icon>
+                            Password Resets
+                        </span>
+                    </button>
+                </div>
+                <div class="pt-4 pb-3 border-t border-gray-700">
+                    <div class="space-y-1 px-4">
+                        <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-secondary">
+                            <span class="flex items-center">
+                                <iconify-icon icon="mdi:home" class="h-5 w-5 mr-2"></iconify-icon>
+                                Main Site
+                            </span>
+                        </a>
+                        <a href="/admin/logout" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-secondary">
+                            <span class="flex items-center">
+                                <iconify-icon icon="mdi:logout" class="h-5 w-5 mr-2"></iconify-icon>
+                                Sign Out
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
 
-        <div class="mt-4">
-            <h3>User Stocks</h3>
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>User ID</th>
-                        <th>User Email</th>
-                        <th>Symbol</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for stock in stocks %}
-                    <tr>
-                        <td>{{ stock.id }}</td>
-                        <td>{{ stock.user_id }}</td>
-                        <td>{{ stock.user_email }}</td>
-                        <td>{{ stock.symbol }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <!-- Admin Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Dashboard Header with Stats -->
+            <div class="mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- User Count -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                        <div class="p-5 flex items-center">
+                            <div class="rounded-full bg-primary/10 p-3 mr-4">
+                                <iconify-icon icon="mdi:account-group" class="h-6 w-6 text-primary"></iconify-icon>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
+                                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ users|length }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stock Count -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                        <div class="p-5 flex items-center">
+                            <div class="rounded-full bg-success/10 p-3 mr-4">
+                                <iconify-icon icon="mdi:chart-timeline-variant" class="h-6 w-6 text-success"></iconify-icon>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tracked Stocks</p>
+                                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stocks|length }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Password Reset Requests -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                        <div class="p-5 flex items-center">
+                            <div class="rounded-full bg-warning/10 p-3 mr-4">
+                                <iconify-icon icon="mdi:key-alert" class="h-6 w-6 text-warning"></iconify-icon>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Password Reset Requests</p>
+                                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ resets|length }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="mb-6 hidden sm:block">
+                <div class="border-b border-gray-200 dark:border-gray-700">
+                    <nav class="-mb-px flex space-x-8">
+                        <button 
+                            @click="activeTab = 'users'" 
+                            :class="{'border-primary text-primary': activeTab === 'users', 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:border-gray-300': activeTab !== 'users'}" 
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none flex items-center">
+                            <iconify-icon icon="mdi:account-group" class="h-5 w-5 mr-2"></iconify-icon>
+                            User Management
+                        </button>
+                        <button 
+                            @click="activeTab = 'stocks'" 
+                            :class="{'border-primary text-primary': activeTab === 'stocks', 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:border-gray-300': activeTab !== 'stocks'}" 
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none flex items-center">
+                            <iconify-icon icon="mdi:chart-line" class="h-5 w-5 mr-2"></iconify-icon>
+                            Stock Tracking
+                        </button>
+                        <button 
+                            @click="activeTab = 'resets'" 
+                            :class="{'border-primary text-primary': activeTab === 'resets', 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:border-gray-300': activeTab !== 'resets'}" 
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none flex items-center">
+                            <iconify-icon icon="mdi:key-change" class="h-5 w-5 mr-2"></iconify-icon>
+                            Password Resets
+                        </button>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- Tab Content -->
+            <!-- Users Tab -->
+            <div x-show="activeTab === 'users'" class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">User Management</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">View and manage all registered users</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Is Active</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Is Verified</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tracked Stocks</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {% for user in users %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ user.id }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ user.email }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    {% if user.is_active %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                        <iconify-icon icon="mdi:check-circle" class="h-4 w-4 mr-1"></iconify-icon>
+                                        Active
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                        <iconify-icon icon="mdi:close-circle" class="h-4 w-4 mr-1"></iconify-icon>
+                                        Inactive
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    {% if user.is_verified %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                        <iconify-icon icon="mdi:check-circle" class="h-4 w-4 mr-1"></iconify-icon>
+                                        Verified
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                                        <iconify-icon icon="mdi:alert-circle" class="h-4 w-4 mr-1"></iconify-icon>
+                                        Unverified
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ user.stock_count }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Stocks Tab -->
+            <div x-show="activeTab === 'stocks'" x-cloak class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Stock Tracking</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">All stocks being tracked by users</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Symbol</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {% for stock in stocks %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ stock.id }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-primary">{{ stock.symbol }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ stock.user_email }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Password Resets Tab -->
+            <div x-show="activeTab === 'resets'" x-cloak class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Password Reset Requests</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">Active password reset requests</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created At</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Token</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {% for reset in resets %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ reset.id }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ reset.user_email }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ reset.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{{ reset.token }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
 
-        <div class="mt-4">
-            <h3>Password Reset Tokens</h3>
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>User ID</th>
-                        <th>User Email</th>
-                        <th>Token</th>
-                        <th>Created At</th>
-                        <th>Expires At</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reset in password_resets %}
-                    <tr>
-                        <td>{{ reset.id }}</td>
-                        <td>{{ reset.user_id }}</td>
-                        <td>{{ reset.user_email }}</td>
-                        <td>{{ reset.token }}</td>
-                        <td>{{ reset.created_at }}</td>
-                        <td>{{ reset.expires_at }}</td>
-                        <td>{% if reset.is_expired %}Expired{% else %}Active{% endif %}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="mt-4">
-            <h3>Raw JSON Data</h3>
-            <pre class="bg-light p-3 rounded">{{ raw_users|tojson(indent=2) }}</pre>
-        </div>
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-gray-800 transition-colors duration-200">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        &copy; {{ current_year }} Stock Market Tracker. All rights reserved.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="/" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary">
+                            <span class="flex items-center">
+                                <iconify-icon icon="mdi:home" class="h-4 w-4 mr-1"></iconify-icon>
+                                Main Site
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 </body>
 </html> 

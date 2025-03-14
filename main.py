@@ -100,7 +100,10 @@ async def get_stock_data(
                 "volume": info.get("regularMarketVolume"),
                 "market_cap": info.get("marketCap"),
                 "fifty_two_week_low": info.get("fiftyTwoWeekLow"),
-                "fifty_two_week_high": info.get("fiftyTwoWeekHigh")
+                "fifty_two_week_high": info.get("fiftyTwoWeekHigh"),
+                "prev_close": info.get("regularMarketPreviousClose", 0),
+                "low": info.get("regularMarketDayLow", 0),
+                "high": info.get("regularMarketDayHigh", 0)
             })
         except IndexError as e:
             logger.error(f"Index error processing {symbol}: {str(e)}")
@@ -113,7 +116,10 @@ async def get_stock_data(
                 "volume": 0,
                 "market_cap": 0,
                 "fifty_two_week_low": 0,
-                "fifty_two_week_high": 0
+                "fifty_two_week_high": 0,
+                "prev_close": 0,
+                "low": 0,
+                "high": 0
             })
         except Exception as e:
             logger.error(f"Error processing {symbol}: {str(e)}")
@@ -123,6 +129,11 @@ async def get_stock_data(
     gainers = [stock for stock in results if stock["percent_change"] >= 0]
     losers = [stock for stock in results if stock["percent_change"] < 0]
     
+    # Filter out user's stocks for portfolio section
+    user_stock_data = []
+    if user and user_symbols:
+        user_stock_data = [stock for stock in results if stock["symbol"] in user_symbols]
+    
     return templates.TemplateResponse(
         "index.html",
         {
@@ -131,6 +142,7 @@ async def get_stock_data(
             "gainers": gainers, 
             "losers": losers,
             "user_symbols": user_symbols,
+            "user_stock_data": user_stock_data,
             "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     )
@@ -145,7 +157,9 @@ async def signup(request: Request):
 
 @app.get("/logout", response_class=HTMLResponse)
 async def logout(request: Request):
-    return templates.TemplateResponse("logout.html", {"request": request, "redirect_url": "/"})
+    # Don't show a separate logout page, just redirect to the home page
+    # The frontend will handle the actual logout by calling the /auth/jwt/logout endpoint
+    return RedirectResponse("/", status_code=303)
 
 @app.get("/about", response_class=HTMLResponse)
 async def about(request: Request):

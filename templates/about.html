@@ -1,322 +1,507 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About - Stock Market Tracker</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Iconify for icons -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <!-- Mermaid JS for diagrams -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3f37c9',
+                        success: '#4cc9f0',
+                        danger: '#f72585',
+                        warning: '#f8961e',
+                        info: '#4895ef',
+                    }
+                }
+            }
+        }
+        
         mermaid.initialize({
             startOnLoad: true,
-            theme: 'neutral'
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#4361ee',
+                primaryTextColor: '#ffffff',
+                primaryBorderColor: '#3f37c9',
+                lineColor: '#4895ef',
+                secondaryColor: '#f3f4f6',
+                tertiaryColor: '#ffffff'
+            }
         });
     </script>
     <style>
-        .header-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-            margin-bottom: 20px;
-        }
-        .tech-container {
-            padding: 2rem;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        .diagram-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        .tech-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <!-- Header with links back to main page -->
-        <div class="header-container">
-            <h1 class="h2 mb-0">About This Project</h1>
-            <a href="/" class="btn btn-outline-primary">
-                <i class="fas fa-home"></i> Back to Stock Market
-            </a>
-        </div>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div x-data="{ mobileMenuOpen: false, darkMode: localStorage.getItem('darkMode') === 'true' }" 
+         x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))"
+         :class="{ 'dark': darkMode }">
         
-        <!-- Project Overview -->
-        <div class="tech-container mb-4">
-            <h2 class="mb-4">Project Overview</h2>
-            <p class="lead">
-                The Stock Market Tracker is a full-stack web application designed to display real-time stock market data, including top gainers and losers. 
-                This project demonstrates modern web development practices with a focus on real-time data processing, user authentication, and responsive design.
-            </p>
-            <p>
-                The application allows users to:
-            </p>
-            <ul>
-                <li>View real-time stock market data with automatic updates every 120 seconds</li>
-                <li>Create an account and log in securely</li>
-                <li>Recover forgotten passwords via email</li>
-                <li>Toggle password visibility for easier input</li>
-                <li>Track custom stock symbols that interest them</li>
-                <li>Monitor market changes with color-coded visual indicators</li>
-            </ul>
-            <p>
-                For administrators, the application provides:
-            </p>
-            <ul>
-                <li>A secure admin dashboard accessible at <code>/admin</code></li>
-                <li>User management with detailed user information</li>
-                <li>Stock tracking overview across all users</li>
-                <li>Password reset request monitoring</li>
-                <li>Data filtering and search capabilities</li>
-            </ul>
-        </div>
-        
-        <!-- Tech Stack -->
-        <div class="tech-container">
-            <h2 class="mb-4">Tech Stack</h2>
-            <div class="row text-center">
-                <div class="col-md-3 mb-4">
-                    <div class="tech-icon text-primary">
-                        <i class="fas fa-server"></i>
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm dark:bg-gray-800 transition-colors duration-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <iconify-icon icon="mdi:chart-line" class="text-primary text-3xl mr-2"></iconify-icon>
+                            <span class="font-bold text-primary text-xl">StockTracker</span>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="/" class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Dashboard
+                            </a>
+                            <a href="/about" class="border-primary text-gray-900 dark:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                About
+                            </a>
+                        </div>
                     </div>
-                    <h4>Backend</h4>
-                    <ul class="list-unstyled">
-                        <li>FastAPI</li>
-                        <li>SQLAlchemy (ORM)</li>
-                        <li>SQLite (Development)</li>
-                        <li>PostgreSQL (Production)</li>
-                        <li>Pydantic</li>
-                    </ul>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="tech-icon text-success">
-                        <i class="fas fa-desktop"></i>
+                    <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+                        <!-- Dark Mode Toggle -->
+                        <button @click="darkMode = !darkMode" class="p-1 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                            <span x-show="!darkMode">
+                                <iconify-icon icon="mdi:moon" class="h-6 w-6"></iconify-icon>
+                            </span>
+                            <span x-show="darkMode">
+                                <iconify-icon icon="mdi:sun" class="h-6 w-6"></iconify-icon>
+                            </span>
+                        </button>
+                        
+                        <!-- User menu -->
+                        {% if user %}
+                        <div class="ml-3 relative" x-data="{ open: false }">
+                            <div>
+                                <button @click="open = !open" class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white">
+                                        {{ user.email[0].upper() }}
+                                    </span>
+                                </button>
+                            </div>
+                            <div x-show="open" 
+                                @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5" role="menu">
+                                <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Sign out</a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="flex items-center space-x-2">
+                            <a href="/login" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                Sign in
+                            </a>
+                            <a href="/signup" class="inline-flex items-center px-4 py-2 border border-primary text-sm font-medium rounded-md text-primary bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                Sign up
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
-                    <h4>Frontend</h4>
-                    <ul class="list-unstyled">
-                        <li>HTML5/CSS3</li>
-                        <li>Jinja2 Templates</li>
-                        <li>Bootstrap 5</li>
-                        <li>Font Awesome</li>
-                        <li>DataTables</li>
-                    </ul>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="tech-icon text-info">
-                        <i class="fas fa-shield-alt"></i>
+                    <div class="-mr-2 flex items-center sm:hidden">
+                        <!-- Mobile menu button -->
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+                            <span x-show="!mobileMenuOpen">
+                                <iconify-icon icon="mdi:menu" class="h-6 w-6"></iconify-icon>
+                            </span>
+                            <span x-show="mobileMenuOpen">
+                                <iconify-icon icon="mdi:close" class="h-6 w-6"></iconify-icon>
+                            </span>
+                        </button>
                     </div>
-                    <h4>Authentication</h4>
-                    <ul class="list-unstyled">
-                        <li>FastAPI Users</li>
-                        <li>JWT Tokens</li>
-                        <li>Secure Password Hashing</li>
-                        <li>Session Management</li>
-                        <li>Password Recovery</li>
-                        <li>Password Visibility Toggle</li>
-                        <li>Admin Authentication</li>
-                    </ul>
                 </div>
-                <div class="col-md-3 mb-4">
-                    <div class="tech-icon text-warning">
-                        <i class="fas fa-chart-line"></i>
+            </div>
+
+            <!-- Mobile menu -->
+            <div x-show="mobileMenuOpen" class="sm:hidden" x-cloak>
+                <div class="pt-2 pb-3 space-y-1">
+                    <a href="/" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                        Dashboard
+                    </a>
+                    <a href="/about" class="bg-primary border-primary text-white block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                        About
+                    </a>
+                </div>
+                <div class="pt-4 pb-3 border-t border-gray-200">
+                    {% if user %}
+                    <div class="flex items-center px-4">
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-primary text-white">
+                                {{ user.email[0].upper() }}
+                            </span>
+                        </div>
+                        <div class="ml-3">
+                            <div class="text-base font-medium text-gray-800">
+                                {{ user.email }}
+                            </div>
+                        </div>
                     </div>
-                    <h4>Data</h4>
-                    <ul class="list-unstyled">
-                        <li>Yahoo Finance API</li>
-                        <li>yfinance Library</li>
-                        <li>Async Data Processing</li>
-                        <li>Real-time Updates</li>
-                        <li>Email Integration</li>
-                    </ul>
+                    <div class="mt-3 space-y-1">
+                        <a href="/logout" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            Sign out
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="mt-3 space-y-1 px-4">
+                        <a href="/login" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            Sign in
+                        </a>
+                        <a href="/signup" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            Sign up
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
-        </div>
-        
-        <!-- Architecture Diagrams -->
-        <h2 class="mb-4">Architecture Diagrams</h2>
-        
-        <!-- System Architecture -->
-        <div class="diagram-container">
-            <h4>System Architecture</h4>
-            <div class="mermaid">
-                graph TD
-                    Client[Browser Client] -->|HTTP Requests| FastAPI[FastAPI Application]
-                    FastAPI -->|Stock Queries| YF[Yahoo Finance API]
-                    YF -->|Market Data| FastAPI
-                    FastAPI -->|SQL Queries| DB[(Database)]
-                    DB -->|User Data & Preferences| FastAPI
-                    FastAPI -->|HTML Templates| Client
-                    FastAPI -->|Email Notifications| Email[Email Service]
-                    Admin[Admin Dashboard] -->|Database Management| FastAPI
-                    
-                    subgraph Database Options
-                    SQLite[(SQLite<br>Development)]
-                    PostgreSQL[(PostgreSQL<br>Production)]
-                    end
-                    
-                    DB --- SQLite
-                    DB --- PostgreSQL
-                    
-                    style Client fill:#f5f5f5,stroke:#333,stroke-width:2px
-                    style FastAPI fill:#059DFF,stroke:#333,stroke-width:2px,color:white
-                    style YF fill:#FF6B6B,stroke:#333,stroke-width:2px
-                    style DB fill:#56C271,stroke:#333,stroke-width:2px,color:white
-                    style SQLite fill:#56C271,stroke:#333,stroke-width:2px,color:white
-                    style PostgreSQL fill:#56C271,stroke:#333,stroke-width:2px,color:white
-                    style Email fill:#FFD166,stroke:#333,stroke-width:2px
-                    style Admin fill:#9381FF,stroke:#333,stroke-width:2px,color:white
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">About the Stock Market Tracker</h1>
+                <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">
+                    A modern dashboard for tracking stock market gainers and losers, built with FastAPI
+                </p>
             </div>
-        </div>
-        
-        <!-- Data Flow -->
-        <div class="diagram-container">
-            <h4>Authentication Flow</h4>
-            <div class="mermaid">
-                sequenceDiagram
-                    participant User as User
-                    participant App as FastAPI App
-                    participant Auth as Auth System
-                    participant DB as Database
-                    participant Email as Email Service
-                    
-                    User->>App: Access Protected Route
-                    App->>Auth: Verify Authentication
-                    Auth->>DB: Check User Credentials
-                    DB-->>Auth: User Data
-                    Auth-->>App: Authentication Result
-                    App-->>User: Protected Content or Login Redirect
-                    
-                    User->>App: Request Password Reset
-                    App->>DB: Generate & Store Reset Token
-                    App->>Email: Send Reset Link (if in production)
-                    App-->>User: Confirmation & Reset Link (if in local mode)
-                    
-                    User->>App: Submit New Password
-                    App->>DB: Validate Token & Update Password
-                    App-->>User: Password Reset Confirmation
-            </div>
-        </div>
-        
-        <!-- Component Architecture -->
-        <div class="diagram-container">
-            <h4>Component Architecture</h4>
-            <div class="mermaid">
-                flowchart TD
-                    subgraph Backend
-                    main[Main App] --> routes[Routes]
-                    routes --> auth[Authentication]
-                    routes --> stock[Stock Data]
-                    routes --> admin[Admin Routes]
-                    auth --> db[Database]
-                    stock --> db
-                    admin --> db
-                    stock --> yf[Yahoo Finance API]
-                    auth --> email[Email Service]
-                    end
-                    
-                    subgraph Frontend
-                    templates[Jinja Templates] --> index[Index Page]
-                    templates --> login[Login Page]
-                    templates --> signup[Signup Page]
-                    templates --> about[About Page]
-                    templates --> forgot[Forgot Password Page]
-                    templates --> reset[Reset Password Page]
-                    templates --> adminLogin[Admin Login]
-                    templates --> adminDash[Admin Dashboard]
-                    end
-                    
-                    Backend --> Frontend
-            </div>
-        </div>
-        
-        <!-- Development & Deployment -->
-        <div class="tech-container mb-5">
-            <h2 class="mb-4">Development & Deployment</h2>
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Development Tools</h4>
-                    <ul>
-                        <li>Git & GitHub for version control</li>
-                        <li>Python 3.11+</li>
-                        <li>Async/await for non-blocking operations</li>
-                        <li>Virtual environments for dependency management</li>
-                        <li>Environment variables for configuration</li>
-                    </ul>
-                </div>
-                <div class="col-md-6">
-                    <h4>Deployment</h4>
-                    <ul>
-                        <li>Hosted on Render.com</li>
-                        <li>Automatic deployment from GitHub repository</li>
-                        <li>Environment variables for configuration</li>
-                        <li>PostgreSQL database for persistent data storage</li>
-                        <li>Email integration for password resets</li>
-                    </ul>
+
+            <!-- Project Overview -->
+            <div class="mb-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Project Overview</h2>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                        This project is a web-based stock market tracker that displays real-time data on the top-performing stocks (gainers) and the worst-performing stocks (losers) in the market. It's designed to provide users with a quick overview of market movements and allow registered users to track their favorite stocks.
+                    </p>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                        The data is automatically refreshed every 2 minutes to ensure you're getting up-to-date information. The application leverages the Yahoo Finance API to fetch real-time market data.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg">
+                            <div class="flex items-center mb-3">
+                                <iconify-icon icon="mdi:account-group" class="text-2xl text-primary mr-3"></iconify-icon>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">User Features</h3>
+                            </div>
+                            <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2 flex-shrink-0"></iconify-icon>
+                                    <span>User authentication system with signup and login</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2 flex-shrink-0"></iconify-icon>
+                                    <span>Personalized stock watchlist for registered users</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2 flex-shrink-0"></iconify-icon>
+                                    <span>Password reset functionality via email</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2 flex-shrink-0"></iconify-icon>
+                                    <span>Responsive design for mobile and desktop</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg">
+                            <div class="flex items-center mb-3">
+                                <iconify-icon icon="mdi:tools" class="text-2xl text-primary mr-3"></iconify-icon>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Technical Features</h3>
+                            </div>
+                            <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2 flex-shrink-0"></iconify-icon>
+                                    <span>Real-time stock data from Yahoo Finance API</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2 flex-shrink-0"></iconify-icon>
+                                    <span>FastAPI backend for high performance</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2 flex-shrink-0"></iconify-icon>
+                                    <span>SQLAlchemy for robust database management</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2 flex-shrink-0"></iconify-icon>
+                                    <span>Automatic data refresh every 2 minutes</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Database Configuration -->
-        <div class="tech-container mb-5">
-            <h2 class="mb-4">Database Configuration</h2>
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Development Environment</h4>
-                    <p>During development, the application uses SQLite, a file-based database that's perfect for local testing:</p>
-                    <ul>
-                        <li>Stored in a local file (<code>test.db</code>)</li>
-                        <li>No additional setup required</li>
-                        <li>Data persists between application restarts</li>
-                        <li>Configured via <code>DATABASE_URL</code> environment variable</li>
-                        <li>Default: <code>sqlite+aiosqlite:///./test.db</code></li>
-                    </ul>
-                </div>
-                <div class="col-md-6">
-                    <h4>Production Environment</h4>
-                    <p>In production, the application uses PostgreSQL for robust, persistent data storage:</p>
-                    <ul>
-                        <li>Hosted on Render.com's managed PostgreSQL service</li>
-                        <li>Data persists across deployments and application restarts</li>
-                        <li>Automatic backups and recovery options</li>
-                        <li>Configured via <code>DATABASE_URL</code> environment variable</li>
-                        <li>Format: <code>postgresql+asyncpg://username:password@hostname:port/database_name</code></li>
-                    </ul>
+
+            <!-- Technology Stack -->
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Technology Stack</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Backend -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center">
+                                <iconify-icon icon="mdi:server" class="text-3xl text-primary mr-3"></iconify-icon>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Backend</h3>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <ul class="space-y-4">
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="mdi:language-python" class="text-xl text-[#3776AB] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">Python</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Primary programming language</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="simple-icons:fastapi" class="text-xl text-[#009688] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">FastAPI</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">High-performance API framework</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="simple-icons:sqlite" class="text-xl text-[#003B57] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">SQLite / PostgreSQL</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Database engine options</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="simple-icons:sqlalchemy" class="text-xl text-[#D71F00] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">SQLAlchemy</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">ORM for database operations</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Frontend -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center">
+                                <iconify-icon icon="mdi:web" class="text-3xl text-primary mr-3"></iconify-icon>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Frontend</h3>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <ul class="space-y-4">
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="mdi:language-html5" class="text-xl text-[#E34F26] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">HTML5</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Structure and content</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="simple-icons:tailwindcss" class="text-xl text-[#06B6D4] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">Tailwind CSS</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Utility-first CSS framework</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="simple-icons:alpinedotjs" class="text-xl text-[#8BC0D0] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">Alpine.js</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Lightweight JavaScript framework</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="simple-icons:jinja" class="text-xl text-[#B41717] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">Jinja2</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Template engine</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- APIs & Utilities -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center">
+                                <iconify-icon icon="mdi:api" class="text-3xl text-primary mr-3"></iconify-icon>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">APIs & Utilities</h3>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <ul class="space-y-4">
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="mdi:chart-line-variant" class="text-xl text-[#6200EA] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">Yahoo Finance API</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Real-time stock data</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="mdi:email-fast-outline" class="text-xl text-[#D14836] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">SMTP Email</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">For password reset functionality</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="mdi:shield-account" class="text-xl text-[#4CAF50] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">FastAPI Users</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Authentication system</span>
+                                </li>
+                                <li class="flex flex-col">
+                                    <div class="flex items-center">
+                                        <iconify-icon icon="mdi:chart-timeline-variant" class="text-xl text-[#FF9800] mr-2"></iconify-icon>
+                                        <span class="font-medium text-gray-900 dark:text-white">Chart.js</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Data visualization</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="mt-4">
-                <h4>Database Models</h4>
-                <p>The application uses SQLAlchemy ORM with the following models:</p>
-                <ul>
-                    <li><strong>User</strong> - Stores user authentication data (email, hashed password, etc.)</li>
-                    <li><strong>Stock</strong> - Tracks custom stock symbols for each user</li>
-                    <li><strong>PasswordReset</strong> - Manages password reset tokens and expiry times</li>
-                </ul>
+
+            <!-- Architecture Diagram -->
+            <div class="mb-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">System Architecture</h2>
+                </div>
+                <div class="p-6">
+                    <div class="mermaid">
+                        graph TB
+                            Client[Client Browser] --> |HTTP Requests| FastAPI
+                            FastAPI --> |Authentication| Auth[FastAPI Users]
+                            FastAPI --> |Database Queries| DB[SQLAlchemy]
+                            FastAPI --> |Email Service| Email[SMTP Server]
+                            FastAPI --> |Stock Data| YF[Yahoo Finance API]
+                            Auth --> DB
+                            DB --> SQLite[(SQLite / PostgreSQL)]
+                            subgraph Backend
+                                FastAPI
+                                Auth
+                                DB
+                                Email
+                                YF
+                            end
+                            subgraph Frontend
+                                Client
+                                Templates[Jinja2 Templates]
+                                Client --> Templates
+                                Templates --> TW[Tailwind CSS]
+                                Templates --> Alpine[Alpine.js]
+                            end
+                    </div>
+                </div>
             </div>
-        </div>
-        
+
+            <!-- How It Works -->
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">How It Works</h2>
+                
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white font-bold mr-3">1</span>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Data Collection</h3>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 ml-11">
+                                The application uses the Yahoo Finance API to fetch real-time data about stock prices, changes, and other market information. This data is collected for all the major market indices and is updated every 2 minutes.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white font-bold mr-3">2</span>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Data Processing</h3>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 ml-11">
+                                Once data is collected, it's processed to identify the top gainers and losers based on percentage change. The application also calculates additional metrics and formats the data for display in the dashboard.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white font-bold mr-3">3</span>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">User Customization</h3>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 ml-11">
+                                Registered users can create a personalized watchlist by adding stock symbols they want to track. This information is stored in the database and associated with their user account, allowing them to access their watchlist from any device.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white font-bold mr-3">4</span>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Display & Visualization</h3>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 ml-11">
+                                The processed data is displayed in an intuitive dashboard that shows the top gainers and losers in the market. Users can easily identify trends with color-coded indicators showing positive (green) and negative (red) changes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Getting Started -->
+            <div class="mb-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Getting Started</h2>
+                </div>
+                <div class="p-6">
+                    <ol class="space-y-4 list-decimal list-inside text-gray-700 dark:text-gray-300">
+                        <li class="ml-5">
+                            <span class="font-medium text-gray-900 dark:text-white">Create an account</span> - Sign up to access personalized features like watchlists.
+                        </li>
+                        <li class="ml-5">
+                            <span class="font-medium text-gray-900 dark:text-white">Add your favorite stocks</span> - After logging in, add stock symbols to your watchlist to track them.
+                        </li>
+                        <li class="ml-5">
+                            <span class="font-medium text-gray-900 dark:text-white">Monitor market trends</span> - Use the dashboard to see the top gainers and losers in real-time.
+                        </li>
+                        <li class="ml-5">
+                            <span class="font-medium text-gray-900 dark:text-white">Check back regularly</span> - Data is updated every 2 minutes to give you fresh insights.
+                        </li>
+                    </ol>
+                    
+                    <div class="mt-8 flex justify-center">
+                        <a href="/" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200">
+                            <iconify-icon icon="mdi:home" class="h-5 w-5 mr-2"></iconify-icon>
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
         <!-- Footer -->
-        <footer class="border-top pt-4 pb-5 text-center text-muted">
-            <p>This project was built for educational and portfolio purposes.</p>
-            <p>© 2023-2025 Stock Market Tracker</p>
+        <footer class="bg-white dark:bg-gray-800 transition-colors duration-200">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                    © {{ current_year }} Stock Market Tracker. All rights reserved.
+                </p>
+            </div>
         </footer>
     </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 
