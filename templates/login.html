@@ -30,6 +30,18 @@
     </script>
     <style>
         [x-cloak] { display: none !important; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            letter-spacing: -0.01em;
+        }
+        
+        /* Clean, minimalist design elements */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4">
@@ -39,7 +51,7 @@
          class="w-full max-w-md">
         
         <!-- Login Card -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden transition-colors duration-200">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden transition-colors duration-200 card">
             <!-- Header -->
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex justify-between items-center">

@@ -162,8 +162,8 @@ async def logout(request: Request):
     return RedirectResponse("/", status_code=303)
 
 @app.get("/about", response_class=HTMLResponse)
-async def about(request: Request):
-    return templates.TemplateResponse("about.html", {"request": request})
+async def about(request: Request, user = Depends(fastapi_users.current_user(optional=True))):
+    return templates.TemplateResponse("about.html", {"request": request, "user": user, "current_year": datetime.now().year})
 
 @app.post("/signup")
 async def signup_post(

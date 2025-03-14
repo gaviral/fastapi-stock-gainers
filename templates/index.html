@@ -39,6 +39,11 @@
     <style>
         [x-cloak] { display: none !important; }
         
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            letter-spacing: -0.01em;
+        }
+        
         .gain-text {
             color: #34C759;  /* Modern green */
         }
@@ -48,16 +53,38 @@
         }
         
         .gain-bg {
-            background-color: rgba(52, 199, 89, 0.15);  /* Light green background */
+            background-color: rgba(52, 199, 89, 0.08);  /* Lighter green background */
         }
         
         .loss-bg {
-            background-color: rgba(255, 59, 48, 0.15);  /* Light red background */
+            background-color: rgba(255, 59, 48, 0.08);  /* Lighter red background */
         }
         
         .blur-load {
             background-size: cover;
             background-position: center;
+        }
+        
+        /* Clean, minimalist design elements */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .table-header {
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: -0.01em;
+        }
+        
+        .btn {
+            font-weight: 500;
+            letter-spacing: -0.01em;
         }
     </style>
 </head>
@@ -68,7 +95,7 @@
         
         <!-- Navigation -->
         <nav class="bg-white shadow-sm dark:bg-gray-800 transition-colors duration-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex">
                         <div class="flex-shrink-0 flex items-center">
@@ -186,7 +213,7 @@
         </nav>
 
         <!-- Main Content -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Header with time -->
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Stock Market Dashboard</h1>
@@ -200,7 +227,7 @@
 
             {% if user %}
             <!-- User's Custom Stocks Section -->
-            <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-200">
+            <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-200 card">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">Your Tracked Stocks</h2>
                 </div>
@@ -257,7 +284,7 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Symbol</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider table-header">Symbol</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Price</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Change</th>
@@ -417,7 +444,7 @@
 
         <!-- Footer -->
         <footer class="bg-white dark:bg-gray-800 transition-colors duration-200">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 <p class="text-center text-sm text-gray-500 dark:text-gray-400">
                     © {{ current_year }} Stock Market Tracker. All rights reserved.
                 </p>
