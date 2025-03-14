@@ -17,12 +17,14 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#4361ee',
-                        secondary: '#3f37c9',
-                        success: '#4cc9f0',
-                        danger: '#f72585',
-                        warning: '#f8961e',
-                        info: '#4895ef',
+                        primary: '#007AFF',       // Modern blue
+                        secondary: '#5856D6',     // Modern purple
+                        success: '#34C759',       // Modern green
+                        danger: '#FF3B30',        // Modern red
+                        warning: '#FF9500',       // Modern orange
+                        info: '#5AC8FA',          // Modern light blue
+                        light: '#F2F2F7',         // Modern light background
+                        dark: '#1C1C1E',          // Modern dark background
                     }
                 }
             }
@@ -32,10 +34,10 @@
             startOnLoad: true,
             theme: 'neutral',
             themeVariables: {
-                primaryColor: '#4361ee',
+                primaryColor: '#007AFF',
                 primaryTextColor: '#ffffff',
-                primaryBorderColor: '#3f37c9',
-                lineColor: '#4895ef',
+                primaryBorderColor: '#5856D6',
+                lineColor: '#5AC8FA',
                 secondaryColor: '#f3f4f6',
                 tertiaryColor: '#ffffff'
             }
@@ -98,7 +100,7 @@
                                 x-transition:leave-start="transform opacity-100 scale-100"
                                 x-transition:leave-end="transform opacity-0 scale-95"
                                 class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5" role="menu">
-                                <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Sign out</a>
+                                <a href="#" onclick="handleLogout(event)" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Sign out</a>
                             </div>
                         </div>
                         {% else %}
@@ -151,7 +153,7 @@
                         </div>
                     </div>
                     <div class="mt-3 space-y-1">
-                        <a href="/logout" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                        <a href="#" onclick="handleLogout(event)" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
                             Sign out
                         </a>
                     </div>
@@ -503,5 +505,32 @@
             </div>
         </footer>
     </div>
+
+    <script>
+        // Function to handle logout
+        function handleLogout(event) {
+            event.preventDefault();
+            
+            fetch('/auth/jwt/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'redirect_url=/',
+                redirect: 'manual'
+            })
+            .then(response => {
+                // Always redirect to home regardless of response
+                window.location.href = '/';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Still redirect to home on error
+                window.location.href = '/';
+            });
+            
+            return false;
+        }
+    </script>
 </body>
 </html> 
