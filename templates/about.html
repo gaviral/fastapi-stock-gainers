@@ -592,9 +592,19 @@
         <!-- Footer -->
         <footer class="bg-white dark:bg-gray-800 transition-colors duration-200">
             <div class="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <p class="text-center text-sm text-gray-500 dark:text-gray-400">
-                    © {{ current_year }} Stock Market Tracker. All rights reserved.
-                </p>
+                <div class="flex flex-col items-center justify-center space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <a href="https://github.com/gaviral/fastapi-stock-gainers" target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors duration-200">
+                            <iconify-icon icon="mdi:github" class="h-6 w-6"></iconify-icon>
+                        </a>
+                        <a href="https://github.com/gaviral/fastapi-stock-gainers" target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors duration-200">
+                            View on GitHub
+                        </a>
+                    </div>
+                    <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                        © {{ current_year }} Stock Market Tracker. All rights reserved.
+                    </p>
+                </div>
             </div>
         </footer>
     </div>
