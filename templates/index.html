@@ -86,6 +86,16 @@
             font-weight: 500;
             letter-spacing: -0.01em;
         }
+        
+        /* Clickable number styles */
+        .cursor-pointer {
+            transition: all 0.2s ease;
+        }
+        
+        .cursor-pointer:hover {
+            transform: scale(1.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
@@ -228,168 +238,8 @@
             </div>
 
             {% if user %}
-            <!-- User's Custom Stocks Section -->
-            <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-200 card">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Your Tracked Stocks</h2>
-                </div>
-                <div class="p-4">
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        {% for symbol in user_symbols %}
-                        <div class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-info/20 text-info dark:bg-info/10">
-                            {{ symbol }}
-                            <form method="POST" action="/remove-stock" class="inline-flex items-center ml-1">
-                                <input type="hidden" name="symbol" value="{{ symbol }}">
-                                <button type="submit" class="flex items-center justify-center text-sm text-gray-500 hover:text-danger focus:outline-none" aria-label="Remove {{ symbol }}">
-                                    <iconify-icon icon="mdi:close-circle" class="h-4 w-4"></iconify-icon>
-                                </button>
-                            </form>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    
-                    {% if not user_symbols %}
-                    <div class="text-center py-4">
-                        <p class="text-gray-500 dark:text-gray-400">You're not tracking any stocks yet. Add some below!</p>
-                    </div>
-                    {% endif %}
-                    
-                    <form method="POST" action="/add-stock" class="mt-4 flex">
-                        <input type="text" name="symbol" placeholder="Enter stock symbol (e.g., AAPL)" required 
-                            class="flex-grow block w-full rounded-l-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-r-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                            <iconify-icon icon="mdi:plus" class="h-5 w-5 mr-1"></iconify-icon>
-                            Add
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Market Overview Section -->
-            <div x-data="{ tab: 'all_stocks' }" class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-200">
-                <div class="flex border-b border-gray-200 dark:border-gray-700">
-                    <button @click="tab = 'all_stocks'" 
-                            :class="{ 'border-b-2 border-primary': tab === 'all_stocks' }"
-                            class="flex-1 py-4 px-4 text-center font-medium hover:text-primary focus:outline-none transition-colors duration-200">
-                        All Stocks
-                    </button>
-                    <button @click="tab = 'market_trends'" 
-                            :class="{ 'border-b-2 border-primary': tab === 'market_trends' }"
-                            class="flex-1 py-4 px-4 text-center font-medium hover:text-primary focus:outline-none transition-colors duration-200">
-                        Market Trends
-                    </button>
-                </div>
-
-                <!-- All Stocks Table -->
-                <div x-show="tab === 'all_stocks'" class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-900">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider table-header">Symbol</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Price</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Change</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">% Change</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            <!-- Gainers -->
-                            {% for stock in gainers %}
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
-                                    <a href="/chart/{{ stock.symbol }}" class="flex items-center hover:underline">
-                                        {{ stock.symbol }}
-                                        <iconify-icon icon="mdi:chart-line" class="ml-1 text-xs text-primary"></iconify-icon>
-                                    </a>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    {{ stock.name }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    {{ stock.formatted_price }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <span class="px-2 py-1 rounded gain-bg gain-text font-medium">
-                                        +${{ stock.change }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm gain-text font-medium">
-                                    +{{ stock.percent_change }}%
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-green-500 font-medium">
-                                    Gainer
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            
-                            <!-- Losers -->
-                            {% for stock in losers %}
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
-                                    <a href="/chart/{{ stock.symbol }}" class="flex items-center hover:underline">
-                                        {{ stock.symbol }}
-                                        <iconify-icon icon="mdi:chart-line" class="ml-1 text-xs text-primary"></iconify-icon>
-                                    </a>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    {{ stock.name }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    {{ stock.formatted_price }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <span class="px-2 py-1 rounded loss-bg loss-text font-medium">
-                                        -${{ stock.change|abs }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm loss-text font-medium">
-                                    -{{ stock.percent_change|abs }}%
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-medium">
-                                    Loser
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Market Trends Tab -->
-                <div x-show="tab === 'market_trends'" class="overflow-x-auto p-6" x-cloak>
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Market Overview</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Total Gainers</p>
-                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ gainers|length }}</p>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Total Losers</p>
-                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ losers|length }}</p>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
-                                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ last_update }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Market Trends</h3>
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-                            <p class="text-gray-700 dark:text-gray-300">
-                                Market trend information will appear here. This could include market sector performance,
-                                recent news affecting the market, or economic indicators.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Market Insights Section -->
-            {% if user and user_stock_data %}
+            <!-- Move Portfolio Performance section above the Market Overview section -->
+            {% if user_stock_data %}
             <div class="mb-8">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Your Portfolio Performance</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -448,6 +298,220 @@
                 </div>
             </div>
             {% endif %}
+            
+            <!-- Add Stock Form - Simplified -->
+            <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-200 card">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Track New Stock</h2>
+                </div>
+                <div class="p-4">
+                    <form method="POST" action="/add-stock" class="flex">
+                        <input type="text" name="symbol" placeholder="Enter stock symbol (e.g., AAPL)" required 
+                            class="flex-grow block w-full rounded-l-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-r-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <iconify-icon icon="mdi:plus" class="h-5 w-5 mr-1"></iconify-icon>
+                            Add
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Market Overview Section -->
+            <div x-data="{ tab: 'all_stocks' }" class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-200">
+                <div class="flex border-b border-gray-200 dark:border-gray-700">
+                    <button @click="tab = 'all_stocks'" 
+                            :class="{ 'border-b-2 border-primary': tab === 'all_stocks' }"
+                            class="flex-1 py-4 px-4 text-center font-medium hover:text-primary focus:outline-none transition-colors duration-200">
+                        All Stocks
+                    </button>
+                    <button @click="tab = 'market_trends'" 
+                            :class="{ 'border-b-2 border-primary': tab === 'market_trends' }"
+                            class="flex-1 py-4 px-4 text-center font-medium hover:text-primary focus:outline-none transition-colors duration-200">
+                        Market Trends
+                    </button>
+                </div>
+
+                <!-- All Stocks Table -->
+                <div x-show="tab === 'all_stocks'" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider table-header">Symbol</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Price</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Change
+                                    <span class="inline-block ml-1 text-info" title="Click values to toggle precision">
+                                        <iconify-icon icon="mdi:information-outline" class="h-4 w-4"></iconify-icon>
+                                    </span>
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    % Change
+                                    <span class="inline-block ml-1 text-info" title="Click values to toggle precision">
+                                        <iconify-icon icon="mdi:information-outline" class="h-4 w-4"></iconify-icon>
+                                    </span>
+                                </th>
+                                {% if user %}
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <!-- Gainers -->
+                            {% for stock in gainers %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                                    <a href="/chart/{{ stock.symbol }}" class="flex items-center hover:underline">
+                                        {{ stock.symbol }}
+                                        <iconify-icon icon="mdi:chart-line" class="ml-1 text-xs text-primary"></iconify-icon>
+                                    </a>
+                                    {% if user and stock.symbol in user_symbols %}
+                                    <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info/20 text-info">
+                                        Tracked
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ stock.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ stock.formatted_price }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span class="px-2 py-1 rounded gain-bg gain-text font-medium cursor-pointer" 
+                                          x-data="{ fullPrecision: false }" 
+                                          @click="fullPrecision = !fullPrecision"
+                                          title="Click to toggle precision">
+                                        <span x-show="!fullPrecision">+${{ '%.2f'|format(stock.change) }}</span>
+                                        <span x-show="fullPrecision" x-cloak>+${{ stock.change }}</span>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm gain-text font-medium">
+                                    <span class="cursor-pointer" 
+                                          x-data="{ fullPrecision: false }" 
+                                          @click="fullPrecision = !fullPrecision"
+                                          title="Click to toggle precision">
+                                        <span x-show="!fullPrecision">+{{ '%.2f'|format(stock.percent_change) }}%</span>
+                                        <span x-show="fullPrecision" x-cloak>+{{ stock.percent_change }}%</span>
+                                    </span>
+                                </td>
+                                {% if user %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {% if stock.symbol in user_symbols %}
+                                    <form method="POST" action="/remove-stock" class="inline-flex">
+                                        <input type="hidden" name="symbol" value="{{ stock.symbol }}">
+                                        <button type="submit" class="text-danger hover:text-red-700 focus:outline-none" aria-label="Remove {{ stock.symbol }}">
+                                            <iconify-icon icon="mdi:close-circle" class="h-5 w-5"></iconify-icon>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <form method="POST" action="/add-stock" class="inline-flex">
+                                        <input type="hidden" name="symbol" value="{{ stock.symbol }}">
+                                        <button type="submit" class="text-primary hover:text-secondary focus:outline-none" aria-label="Track {{ stock.symbol }}">
+                                            <iconify-icon icon="mdi:plus-circle" class="h-5 w-5"></iconify-icon>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                            
+                            <!-- Losers -->
+                            {% for stock in losers %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                                    <a href="/chart/{{ stock.symbol }}" class="flex items-center hover:underline">
+                                        {{ stock.symbol }}
+                                        <iconify-icon icon="mdi:chart-line" class="ml-1 text-xs text-primary"></iconify-icon>
+                                    </a>
+                                    {% if user and stock.symbol in user_symbols %}
+                                    <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info/20 text-info">
+                                        Tracked
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ stock.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ stock.formatted_price }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span class="px-2 py-1 rounded loss-bg loss-text font-medium cursor-pointer" 
+                                          x-data="{ fullPrecision: false }" 
+                                          @click="fullPrecision = !fullPrecision"
+                                          title="Click to toggle precision">
+                                        <span x-show="!fullPrecision">-${{ '%.2f'|format(stock.change|abs) }}</span>
+                                        <span x-show="fullPrecision" x-cloak>-${{ stock.change|abs }}</span>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm loss-text font-medium">
+                                    <span class="cursor-pointer" 
+                                          x-data="{ fullPrecision: false }" 
+                                          @click="fullPrecision = !fullPrecision"
+                                          title="Click to toggle precision">
+                                        <span x-show="!fullPrecision">-{{ '%.2f'|format(stock.percent_change|abs) }}%</span>
+                                        <span x-show="fullPrecision" x-cloak>-{{ stock.percent_change|abs }}%</span>
+                                    </span>
+                                </td>
+                                {% if user %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {% if stock.symbol in user_symbols %}
+                                    <form method="POST" action="/remove-stock" class="inline-flex">
+                                        <input type="hidden" name="symbol" value="{{ stock.symbol }}">
+                                        <button type="submit" class="text-danger hover:text-red-700 focus:outline-none" aria-label="Remove {{ stock.symbol }}">
+                                            <iconify-icon icon="mdi:close-circle" class="h-5 w-5"></iconify-icon>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <form method="POST" action="/add-stock" class="inline-flex">
+                                        <input type="hidden" name="symbol" value="{{ stock.symbol }}">
+                                        <button type="submit" class="text-primary hover:text-secondary focus:outline-none" aria-label="Track {{ stock.symbol }}">
+                                            <iconify-icon icon="mdi:plus-circle" class="h-5 w-5"></iconify-icon>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Market Trends Tab -->
+                <div x-show="tab === 'market_trends'" class="overflow-x-auto p-6" x-cloak>
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Market Overview</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Total Gainers</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ gainers|length }}</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Total Losers</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ losers|length }}</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
+                                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ last_update }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Market Trends</h3>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
+                            <p class="text-gray-700 dark:text-gray-300">
+                                Market trend information will appear here. This could include market sector performance,
+                                recent news affecting the market, or economic indicators.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- Footer -->
