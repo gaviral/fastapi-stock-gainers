@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Stock Market Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Iconify for icons -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',       // Modern blue
+                        secondary: '#5856D6',     // Modern purple
+                        success: '#34C759',       // Modern green
+                        danger: '#FF3B30',        // Modern red
+                        warning: '#FF9500',       // Modern orange
+                        info: '#5AC8FA',          // Modern light blue
+                        light: '#F2F2F7',         // Modern light background
+                        dark: '#1C1C1E',          // Modern dark background
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            letter-spacing: -0.01em;
+        }
+        
+        /* Clean, minimalist design elements */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <div x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }"
+         x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))"
+         :class="{'dark': darkMode}"
+         class="flex-grow flex items-center justify-center">
+        
+        <div class="max-w-md w-full mx-auto px-4 py-8">
+            <div class="text-center mb-8">
+                <iconify-icon icon="mdi:chart-line" class="text-primary text-4xl"></iconify-icon>
+                <h1 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">StockTracker</h1>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden transition-colors duration-200 card">
+                <div class="p-6">
+                    <div class="flex items-center justify-center mb-6">
+                        <div class="rounded-full bg-danger/10 p-3">
+                            <iconify-icon icon="mdi:alert-circle" class="text-danger text-3xl"></iconify-icon>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-xl font-bold text-center text-gray-900 dark:text-white mb-4">An Error Occurred</h2>
+                    
+                    <p class="text-gray-600 dark:text-gray-300 text-center mb-6">
+                        {{ error }}
+                    </p>
+                    
+                    <div class="flex justify-center">
+                        <a href="/" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <iconify-icon icon="mdi:home" class="h-5 w-5 mr-2"></iconify-icon>
+                            Return to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dark Mode Toggle -->
+            <div class="mt-6 text-center">
+                <button @click="darkMode = !darkMode" class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    <span x-show="!darkMode">
+                        <iconify-icon icon="mdi:moon" class="h-5 w-5 mr-1"></iconify-icon>
+                        Dark Mode
+                    </span>
+                    <span x-show="darkMode" x-cloak>
+                        <iconify-icon icon="mdi:sun" class="h-5 w-5 mr-1"></iconify-icon>
+                        Light Mode
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 transition-colors duration-200 py-4">
+        <div class="max-w-6xl mx-auto px-4">
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                © {{ current_year|default(2025) }} Stock Market Tracker. All rights reserved.
+            </p>
+        </div>
+    </footer>
+    
+    <script>
+        // Function to log user interactions
+        function logUserAction(action, details) {
+            // Log to console for debugging
+            console.log(`User Action: ${action} - ${details}`);
+            
+            // Send log to server
+            fetch('/log-action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    details: details,
+                    page: 'error',
+                    timestamp: new Date().toISOString()
+                })
+            }).catch(error => {
+                console.error('Error logging action:', error);
+            });
+        }
+        
+        // Log page view when document loads
+        document.addEventListener('DOMContentLoaded', function() {
+            logUserAction('error_page_view', 'User viewed the error page: {{ error|default("Unknown error") }}');
+            
+            // Track dark mode toggle
+            const darkModeButton = document.querySelector('button[x-on\\:click="darkMode = !darkMode"]');
+            if (darkModeButton) {
+                darkModeButton.addEventListener('click', function() {
+                    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                    logUserAction('theme_change', isDarkMode ? 'Light mode enabled' : 'Dark mode enabled');
+                });
+            }
+            
+            // Track return to dashboard button click
+            const returnButton = document.querySelector('a[href="/"]');
+            if (returnButton) {
+                returnButton.addEventListener('click', function() {
+                    logUserAction('button_click', 'User clicked Return to Dashboard button');
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

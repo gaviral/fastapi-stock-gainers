@@ -79,8 +79,10 @@
                 <div class="flex justify-between h-16">
                     <div class="flex">
                         <div class="flex-shrink-0 flex items-center">
-                            <iconify-icon icon="mdi:chart-line" class="text-primary text-3xl mr-2"></iconify-icon>
-                            <span class="font-bold text-primary text-xl">StockTracker</span>
+                            <a href="/" class="flex items-center">
+                                <iconify-icon icon="mdi:chart-line" class="text-primary text-3xl mr-2"></iconify-icon>
+                                <span class="font-bold text-primary text-xl">StockTracker</span>
+                            </a>
                         </div>
                         <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                             <a href="/" class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
@@ -385,12 +387,21 @@
                                     </div>
                                     <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Authentication system</span>
                                 </li>
-                                <li class="flex flex-col">
-                                    <div class="flex items-center">
-                                        <iconify-icon icon="mdi:chart-timeline-variant" class="text-xl text-[#FF9800] mr-2"></iconify-icon>
-                                        <span class="font-medium text-gray-900 dark:text-white">Chart.js</span>
-                                    </div>
-                                    <span class="text-sm text-gray-600 dark:text-gray-400 ml-7">Data visualization</span>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2"></iconify-icon>
+                                    <span>Real-time stock data updates</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2"></iconify-icon>
+                                    <span>Comprehensive financial metrics</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2"></iconify-icon>
+                                    <span>User account management</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2"></iconify-icon>
+                                    <span>Custom stock tracking</span>
                                 </li>
                             </ul>
                         </div>
@@ -515,6 +526,31 @@
                     </div>
                 </div>
             </div>
+
+            <div class="mb-8">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Stock Data</h3>
+                <p class="text-gray-700 dark:text-gray-300 mt-2">
+                    Our platform provides comprehensive stock data including:
+                </p>
+                <ul class="mt-4 space-y-2 text-gray-700 dark:text-gray-300">
+                    <li class="flex items-start">
+                        <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2"></iconify-icon>
+                        <span>Current price and daily change</span>
+                    </li>
+                    <li class="flex items-start">
+                        <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2"></iconify-icon>
+                        <span>Market capitalization and trading volume</span>
+                    </li>
+                    <li class="flex items-start">
+                        <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2"></iconify-icon>
+                        <span>52-week high and low values</span>
+                    </li>
+                    <li class="flex items-start">
+                        <iconify-icon icon="mdi:check-circle" class="text-success mt-1 mr-2"></iconify-icon>
+                        <span>Key financial metrics like P/E ratio and dividend yield</span>
+                    </li>
+                </ul>
+            </div>
         </main>
 
         <!-- Footer -->
@@ -531,6 +567,9 @@
         // Function to handle logout
         function handleLogout(event) {
             event.preventDefault();
+            
+            // Log the logout action
+            logUserAction('logout_button_clicked', 'User clicked logout button');
             
             fetch('/auth/jwt/logout', {
                 method: 'POST',
@@ -552,6 +591,42 @@
             
             return false;
         }
+        
+        // Function to log user interactions
+        function logUserAction(action, details) {
+            // Log to console for debugging
+            console.log(`User Action: ${action} - ${details}`);
+            
+            // Send log to server
+            fetch('/log-action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    details: details,
+                    page: 'about',
+                    timestamp: new Date().toISOString()
+                })
+            }).catch(error => {
+                console.error('Error logging action:', error);
+            });
+        }
+        
+        // Log page view when document loads
+        document.addEventListener('DOMContentLoaded', function() {
+            logUserAction('about_page_view', 'User viewed the about page');
+            
+            // Track dark mode toggle
+            const darkModeButton = document.querySelector('button[x-on\\:click="darkMode = !darkMode"]');
+            if (darkModeButton) {
+                darkModeButton.addEventListener('click', function() {
+                    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                    logUserAction('theme_change', isDarkMode ? 'Light mode enabled' : 'Dark mode enabled');
+                });
+            }
+        });
     </script>
 </body>
 </html> 

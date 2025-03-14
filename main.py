@@ -13,6 +13,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm, HTTPBasic
 from starlette.status import HTTP_401_UNAUTHORIZED
+import json
+from sqlalchemy.orm import Session
+
+# Remove all relative imports
+# from .database import SessionLocal, engine
+# from . import models, schemas
+# from .auth import current_active_user
+# from .users import User
 
 # Load environment variables
 load_dotenv()
@@ -65,6 +73,63 @@ TICKERS = [
   "JPM", "BAC", "SOXL", "SOXS", "AMD", "INTC", "DIS", "KO", "PEP", 
   "WMT", "COST", "V", "MA", "PYPL", "COIN"
 ]
+
+# Add a request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = datetime.now()
+    
+    # Get client info
+    client_host = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent", "unknown")
+    referer = request.headers.get("referer", "direct")
+    
+    # Log request details
+    logger.info(f"Request started: {request.method} {request.url.path} from {client_host} - Referer: {referer}")
+    
+    # Process the request
+    response = await call_next(request)
+    
+    # Calculate duration
+    duration = (datetime.now() - start_time).total_seconds()
+    
+    # Log response details including status code
+    logger.info(f"Request completed: {request.method} {request.url.path} - Status: {response.status_code} - Duration: {duration:.4f}s")
+    
+    return response
+
+# Function to log user interactions
+def log_user_interaction(action_type, action_details, user=None):
+    user_id = str(user.id) if user else "anonymous"
+    logger.info(f"User Interaction: {action_type} - User: {user_id} - Details: {action_details}")
+
+# Function to format monetary values
+def format_monetary_value(value):
+    """
+    Format monetary values to use M for millions and B for billions with 2 decimal places.
+    
+    Args:
+        value: The numeric value to format
+        
+    Returns:
+        Formatted string with M for millions, B for billions, limited to 2 decimal places
+    """
+    if value is None or value == "N/A":
+        return "N/A"
+    
+    try:
+        # Convert to float if it's not already
+        value = float(value)
+        
+        # Format based on magnitude
+        if value >= 1_000_000_000:  # Billions
+            return f"${value / 1_000_000_000:.2f}B"
+        elif value >= 1_000_000:  # Millions
+            return f"${value / 1_000_000:.2f}M"
+        else:
+            return f"${value:.2f}"
+    except (ValueError, TypeError):
+        return str(value)
 
 @app.get("/", response_class=HTMLResponse)
 async def get_stock_data(
@@ -134,6 +199,18 @@ async def get_stock_data(
     if user and user_symbols:
         user_stock_data = [stock for stock in results if stock["symbol"] in user_symbols]
     
+    # Format monetary values
+    for stock_list in [gainers, losers, user_stock_data]:
+        for stock in stock_list:
+            stock["formatted_price"] = format_monetary_value(stock["price"])
+            stock["formatted_market_cap"] = format_monetary_value(stock["market_cap"])
+            stock["formatted_volume"] = format_monetary_value(stock["volume"]) if stock["volume"] else "N/A"
+            stock["formatted_52_week_low"] = format_monetary_value(stock["fifty_two_week_low"])
+            stock["formatted_52_week_high"] = format_monetary_value(stock["fifty_two_week_high"])
+            stock["formatted_prev_close"] = format_monetary_value(stock["prev_close"])
+            stock["formatted_low"] = format_monetary_value(stock["low"])
+            stock["formatted_high"] = format_monetary_value(stock["high"])
+    
     return templates.TemplateResponse(
         "index.html",
         {
@@ -157,13 +234,16 @@ async def signup(request: Request):
 
 @app.get("/logout", response_class=HTMLResponse)
 async def logout(request: Request):
+    # Log logout attempt
+    log_user_interaction("logout", "User initiated logout")
     # Don't show a separate logout page, just redirect to the home page
     # The frontend will handle the actual logout by calling the /auth/jwt/logout endpoint
     return RedirectResponse("/", status_code=303)
 
 @app.get("/about", response_class=HTMLResponse)
 async def about(request: Request, user = Depends(fastapi_users.current_user(optional=True))):
-    return templates.TemplateResponse("about.html", {"request": request, "user": user, "current_year": datetime.now().year})
+    """About page with information about the application."""
+    return templates.TemplateResponse("about.html", {"request": request, "user": user})
 
 @app.post("/signup")
 async def signup_post(
@@ -175,6 +255,8 @@ async def signup_post(
     try:
         user = await user_manager.create(UserCreate(email=email, password=password, is_active=True))
         logger.info(f"User {email} registered successfully")
+        # Log signup action
+        log_user_interaction("signup", f"Email: {email}")
         return RedirectResponse(url="/login", status_code=303)
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
@@ -200,6 +282,8 @@ async def add_stock(
     if not result.scalars().first():
         session.add(Stock(user_id=user.id, symbol=symbol))
         await session.commit()
+        # Log stock addition
+        log_user_interaction("add_stock", f"Symbol: {symbol}", user)
     
     return RedirectResponse("/", status_code=303)
 
@@ -217,6 +301,8 @@ async def remove_stock(
     if stock:
         await session.delete(stock)
         await session.commit()
+        # Log stock removal
+        log_user_interaction("remove_stock", f"Symbol: {symbol}", user)
     
     return RedirectResponse("/", status_code=303)
 
@@ -232,6 +318,9 @@ async def forgot_password_post(
     user_manager = Depends(get_user_manager)
 ):
     logger.info(f"Password reset requested for email: {email}")
+    
+    # Log password reset request
+    log_user_interaction("password_reset_request", f"Email: {email}")
     
     # Check if user exists
     user_query = await session.execute(select(User).where(User.email == email))
@@ -356,6 +445,9 @@ async def reset_password_post(
         await session.delete(reset)
         await session.commit()
         
+        # Log successful password reset
+        log_user_interaction("password_reset_success", f"User ID: {reset.user_id}")
+        
         # Redirect to login page with success message
         return RedirectResponse(url="/login?success=Password+reset+successful.+Please+log+in+with+your+new+password.", status_code=303)
     except Exception as e:
@@ -414,6 +506,9 @@ async def admin_login(
     username: str = Form(...),
     password: str = Form(...)
 ):
+    # Log admin login attempt
+    logger.info(f"Admin login attempt: {username}")
+    
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         response = RedirectResponse(url="/admin/dashboard", status_code=303)
         token = hashlib.sha256(f"{username}:{password}:{os.urandom(8).hex()}".encode()).hexdigest()
@@ -455,6 +550,9 @@ async def admin_dashboard(
     session: AsyncSession = Depends(get_async_session),
     _: bool = Depends(verify_admin)
 ):
+    # Log admin dashboard access
+    logger.info("Admin accessed dashboard")
+    
     # Query all users
     users_query = await session.execute(select(User))
     users = users_query.scalars().all()
@@ -515,13 +613,166 @@ async def admin_dashboard(
 
 @app.get("/admin/logout", response_class=HTMLResponse)
 async def admin_logout(request: Request):
-    admin_token = request.cookies.get("admin_session")
-    
-    if admin_token:
-        app.state.admin_sessions = getattr(app.state, "admin_sessions", set())
-        app.state.admin_sessions.discard(admin_token)
+    # Log admin logout
+    logger.info("Admin logged out")
     
     response = RedirectResponse(url="/admin", status_code=303)
     response.delete_cookie(key="admin_session", path="/admin")
     
-    return response 
+    return response
+
+@app.get("/chart/{symbol}", response_class=HTMLResponse)
+async def get_stock_chart(request: Request, symbol: str, period: str = "1y", user = Depends(fastapi_users.current_user(optional=True))):
+    """Display detailed stock information for the given stock symbol."""
+    # Log stock details access
+    log_user_interaction("view_stock_details", f"Symbol: {symbol}, Period: {period}", user)
+    try:
+        # Validate period input
+        valid_periods = ["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"]
+        if period not in valid_periods:
+            period = "1y"  # Default to 1 year if invalid period
+        
+        # Fetch historical stock data
+        ticker = yf.Ticker(symbol)
+        hist = ticker.history(period=period)
+        
+        if hist.empty:
+            # No data available for this symbol
+            return templates.TemplateResponse(
+                "error.html", 
+                {"request": request, "error": f"No data available for symbol: {symbol}", "user": user, "current_year": datetime.now().year}
+            )
+        
+        # Get company name if available
+        company_name = ticker.info.get('shortName', symbol) if hasattr(ticker, 'info') else symbol
+        
+        # Calculate some basic statistics
+        if not hist.empty:
+            current_price = hist['Close'].iloc[-1]
+            prev_close = hist['Close'].iloc[-2] if len(hist) > 1 else current_price
+            change = current_price - prev_close
+            percent_change = (change / prev_close) * 100 if prev_close != 0 else 0
+            
+            # Get min and max prices for the period
+            period_high = hist['High'].max()
+            period_low = hist['Low'].min()
+            
+            # Get the latest volume
+            latest_volume = hist['Volume'].iloc[-1]
+            avg_volume = hist['Volume'].mean()
+            
+            # Calculate moving averages
+            if len(hist) >= 50:
+                ma50 = hist['Close'].rolling(window=50).mean().iloc[-1]
+            else:
+                ma50 = None
+                
+            if len(hist) >= 200:
+                ma200 = hist['Close'].rolling(window=200).mean().iloc[-1]
+            else:
+                ma200 = None
+        else:
+            current_price = prev_close = change = percent_change = period_high = period_low = latest_volume = avg_volume = ma50 = ma200 = None
+        
+        # Get additional stock information for the template
+        try:
+            stock_info = {
+                "market_cap": ticker.info.get("marketCap", "N/A"),
+                "pe_ratio": ticker.info.get("trailingPE", "N/A"),
+                "dividend_yield": ticker.info.get("dividendYield", "N/A"),
+                "avg_volume": ticker.info.get("averageVolume", "N/A"),
+                "fifty_two_week_high": ticker.info.get("fiftyTwoWeekHigh", "N/A"),
+                "fifty_two_week_low": ticker.info.get("fiftyTwoWeekLow", "N/A"),
+                "current_price": current_price,
+                "prev_close": prev_close,
+                "change": change,
+                "percent_change": percent_change,
+                "period_high": period_high,
+                "period_low": period_low,
+                "latest_volume": latest_volume,
+                "avg_volume_period": avg_volume,
+                "ma50": ma50,
+                "ma200": ma200
+            }
+            
+            # Format monetary values
+            stock_info["formatted_market_cap"] = format_monetary_value(stock_info["market_cap"])
+            stock_info["formatted_current_price"] = format_monetary_value(stock_info["current_price"])
+            stock_info["formatted_prev_close"] = format_monetary_value(stock_info["prev_close"])
+            stock_info["formatted_period_high"] = format_monetary_value(stock_info["period_high"])
+            stock_info["formatted_period_low"] = format_monetary_value(stock_info["period_low"])
+            stock_info["formatted_fifty_two_week_high"] = format_monetary_value(stock_info["fifty_two_week_high"])
+            stock_info["formatted_fifty_two_week_low"] = format_monetary_value(stock_info["fifty_two_week_low"])
+            stock_info["formatted_latest_volume"] = format_monetary_value(stock_info["latest_volume"])
+            stock_info["formatted_avg_volume"] = format_monetary_value(stock_info["avg_volume"])
+            stock_info["formatted_ma50"] = format_monetary_value(stock_info["ma50"])
+            stock_info["formatted_ma200"] = format_monetary_value(stock_info["ma200"])
+            
+        except:
+            stock_info = {
+                "market_cap": "N/A",
+                "pe_ratio": "N/A",
+                "dividend_yield": "N/A",
+                "avg_volume": "N/A",
+                "fifty_two_week_high": "N/A",
+                "fifty_two_week_low": "N/A",
+                "current_price": current_price,
+                "prev_close": prev_close,
+                "change": change,
+                "percent_change": percent_change,
+                "period_high": period_high,
+                "period_low": period_low,
+                "latest_volume": latest_volume,
+                "avg_volume_period": avg_volume,
+                "ma50": ma50,
+                "ma200": ma200,
+                "formatted_market_cap": "N/A",
+                "formatted_current_price": format_monetary_value(current_price),
+                "formatted_prev_close": format_monetary_value(prev_close),
+                "formatted_period_high": format_monetary_value(period_high),
+                "formatted_period_low": format_monetary_value(period_low),
+                "formatted_fifty_two_week_high": format_monetary_value(period_high),
+                "formatted_fifty_two_week_low": format_monetary_value(period_low),
+                "formatted_latest_volume": format_monetary_value(latest_volume),
+                "formatted_avg_volume": format_monetary_value(avg_volume),
+                "formatted_ma50": format_monetary_value(ma50),
+                "formatted_ma200": format_monetary_value(ma200)
+            }
+        
+        return templates.TemplateResponse(
+            "stock_details.html", 
+            {
+                "request": request, 
+                "symbol": symbol,
+                "company_name": company_name,
+                "user": user,
+                "current_year": datetime.now().year,
+                "current_period": period,
+                "stock_info": stock_info
+            }
+        )
+    except Exception as e:
+        # Log the error
+        logging.error(f"Error retrieving stock details for {symbol}: {str(e)}")
+        
+        # Return error template
+        return templates.TemplateResponse(
+            "error.html", 
+            {"request": request, "error": f"Error retrieving stock details: {str(e)}", "user": user, "current_year": datetime.now().year}
+        )
+
+@app.post("/log-action")
+async def log_client_action(request: Request):
+    """Endpoint to handle client-side logging from JavaScript."""
+    try:
+        log_data = await request.json()
+        action = log_data.get("action", "unknown")
+        details = log_data.get("details", "none")
+        page = log_data.get("page", "unknown")
+        timestamp = log_data.get("timestamp", datetime.now().isoformat())
+        
+        logger.info(f"Client Action: {action} - Page: {page} - Details: {details} - Time: {timestamp}")
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Error logging client action: {str(e)}")
+        return {"status": "error", "message": str(e)}

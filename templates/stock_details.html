@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ symbol }} Details - Stock Market Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Iconify for icons -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',       // Modern blue
+                        secondary: '#5856D6',     // Modern purple
+                        success: '#34C759',       // Modern green
+                        danger: '#FF3B30',        // Modern red
+                        warning: '#FF9500',       // Modern orange
+                        info: '#5AC8FA',          // Modern light blue
+                        light: '#F2F2F7',         // Modern light background
+                        dark: '#1C1C1E',          // Modern dark background
+                        gain: 'rgba(52, 199, 89, 0.08)',  // Lighter green background
+                        loss: 'rgba(255, 59, 48, 0.08)'   // Lighter red background
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            letter-spacing: -0.01em;
+        }
+        
+        /* Clean, minimalist design elements */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div x-data="{ mobileMenuOpen: false, darkMode: localStorage.getItem('darkMode') === 'true' }" 
+         x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))"
+         :class="{ 'dark': darkMode }">
+        
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm dark:bg-gray-800 transition-colors duration-200">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <a href="/" class="flex items-center">
+                                <iconify-icon icon="mdi:chart-line" class="text-primary text-3xl mr-2"></iconify-icon>
+                                <span class="font-bold text-primary text-xl">StockTracker</span>
+                            </a>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="/" class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Dashboard
+                            </a>
+                            <a href="/about" class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                About
+                            </a>
+                        </div>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+                        <!-- Dark Mode Toggle -->
+                        <button @click="darkMode = !darkMode" class="p-1 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                            <span x-show="!darkMode">
+                                <iconify-icon icon="mdi:moon" class="h-6 w-6"></iconify-icon>
+                            </span>
+                            <span x-show="darkMode">
+                                <iconify-icon icon="mdi:sun" class="h-6 w-6"></iconify-icon>
+                            </span>
+                        </button>
+                        
+                        <!-- User menu -->
+                        {% if user %}
+                        <div class="ml-3 relative" x-data="{ open: false }">
+                            <div>
+                                <button @click="open = !open" class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white">
+                                        {{ user.email[0].upper() }}
+                                    </span>
+                                </button>
+                            </div>
+                            <div x-show="open" 
+                                @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5" role="menu">
+                                <a href="#" onclick="handleLogout(event)" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Sign out</a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="flex items-center space-x-2">
+                            <a href="/login" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                Sign in
+                            </a>
+                            <a href="/signup" class="inline-flex items-center px-4 py-2 border border-primary text-sm font-medium rounded-md text-primary bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                Sign up
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="-mr-2 flex items-center sm:hidden">
+                        <!-- Mobile menu button -->
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+                            <span x-show="!mobileMenuOpen">
+                                <iconify-icon icon="mdi:menu" class="h-6 w-6"></iconify-icon>
+                            </span>
+                            <span x-show="mobileMenuOpen">
+                                <iconify-icon icon="mdi:close" class="h-6 w-6"></iconify-icon>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div x-show="mobileMenuOpen" class="sm:hidden" x-cloak>
+                <div class="pt-2 pb-3 space-y-1">
+                    <a href="/" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                        Dashboard
+                    </a>
+                    <a href="/about" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                        About
+                    </a>
+                </div>
+                <div class="pt-4 pb-3 border-t border-gray-200">
+                    {% if user %}
+                    <div class="flex items-center px-4">
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-primary text-white">
+                                {{ user.email[0].upper() }}
+                            </span>
+                        </div>
+                        <div class="ml-3">
+                            <div class="text-base font-medium text-gray-800">
+                                {{ user.email }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <a href="#" onclick="handleLogout(event)" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            Sign out
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="mt-3 space-y-1 px-4">
+                        <a href="/login" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            Sign in
+                        </a>
+                        <a href="/signup" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            Sign up
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Header -->
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ company_name }} ({{ symbol }})</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Stock Details</p>
+                </div>
+                <div class="mt-4 sm:mt-0">
+                    <div class="flex space-x-2">
+                        <a href="/" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <iconify-icon icon="mdi:arrow-left" class="h-4 w-4 mr-1"></iconify-icon>
+                            Back to Dashboard
+                        </a>
+                        <a href="/chart/{{ symbol }}?period=5d" class="inline-flex items-center px-3 py-2 border {{ 'border-primary bg-primary text-white' if current_period == '5d' else 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50' }} shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            5D
+                        </a>
+                        <a href="/chart/{{ symbol }}?period=1mo" class="inline-flex items-center px-3 py-2 border {{ 'border-primary bg-primary text-white' if current_period == '1mo' else 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50' }} shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            1M
+                        </a>
+                        <a href="/chart/{{ symbol }}?period=3mo" class="inline-flex items-center px-3 py-2 border {{ 'border-primary bg-primary text-white' if current_period == '3mo' else 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50' }} shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            3M
+                        </a>
+                        <a href="/chart/{{ symbol }}?period=1y" class="inline-flex items-center px-3 py-2 border {{ 'border-primary bg-primary text-white' if current_period == '1y' else 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50' }} shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            1Y
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Overview Card -->
+            <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden card">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Price Overview</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Current Price</span>
+                            <p class="text-3xl font-bold {{ 'text-success' if stock_info.change >= 0 else 'text-danger' }} mt-1">
+                                {{ stock_info.formatted_current_price }}
+                            </p>
+                            <div class="flex items-center mt-1">
+                                <span class="{{ 'text-success' if stock_info.change >= 0 else 'text-danger' }} font-medium">
+                                    {{ '+' if stock_info.change >= 0 else '' }}{{ '%.2f'|format(stock_info.change) }} ({{ '+' if stock_info.percent_change >= 0 else '' }}{{ '%.2f'|format(stock_info.percent_change) }}%)
+                                </span>
+                                <iconify-icon icon="{{ 'mdi:arrow-up' if stock_info.change >= 0 else 'mdi:arrow-down' }}" class="ml-1 {{ 'text-success' if stock_info.change >= 0 else 'text-danger' }}"></iconify-icon>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Previous Close: {{ stock_info.formatted_prev_close }}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ current_period }} Period Range</span>
+                            <div class="mt-2 space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Low</span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ stock_info.formatted_period_low }}</span>
+                                </div>
+                                <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                                    {% set range = stock_info.period_high - stock_info.period_low %}
+                                    {% set position = ((stock_info.current_price - stock_info.period_low) / range) * 100 if range > 0 else 50 %}
+                                    <div class="h-2 bg-primary rounded-full" style="width: {{ position }}%;"></div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">High</span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ stock_info.formatted_period_high }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Volume</span>
+                            <p class="text-xl font-semibold text-gray-900 dark:text-white mt-1">
+                                {{ '{:,}'.format(stock_info.latest_volume) }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Avg Volume: {{ '{:,}'.format(stock_info.avg_volume_period|int) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Moving Averages -->
+            <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden card">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Moving Averages</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">50-Day MA</span>
+                            <p class="text-xl font-semibold text-gray-900 dark:text-white mt-1">
+                                {% if stock_info.ma50 %}
+                                    ${{ '%.2f'|format(stock_info.ma50) }}
+                                    <span class="text-sm {{ 'text-success' if stock_info.current_price > stock_info.ma50 else 'text-danger' }}">
+                                        ({{ '+' if stock_info.current_price > stock_info.ma50 else '' }}{{ '%.2f'|format(stock_info.current_price - stock_info.ma50) }})
+                                    </span>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">200-Day MA</span>
+                            <p class="text-xl font-semibold text-gray-900 dark:text-white mt-1">
+                                {% if stock_info.ma200 %}
+                                    ${{ '%.2f'|format(stock_info.ma200) }}
+                                    <span class="text-sm {{ 'text-success' if stock_info.current_price > stock_info.ma200 else 'text-danger' }}">
+                                        ({{ '+' if stock_info.current_price > stock_info.ma200 else '' }}{{ '%.2f'|format(stock_info.current_price - stock_info.ma200) }})
+                                    </span>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock Details -->
+            <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden card">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ symbol }} Stock Details</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div class="stat-item">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Market Cap</span>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {% if stock_info.market_cap != 'N/A' %}
+                                    {{ stock_info.formatted_market_cap }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="stat-item">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">P/E Ratio</span>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {% if stock_info.pe_ratio != 'N/A' %}
+                                    {{ '%.2f'|format(stock_info.pe_ratio) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="stat-item">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Dividend Yield</span>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {% if stock_info.dividend_yield != 'N/A' %}
+                                    {{ '%.2f'|format(stock_info.dividend_yield * 100) }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="stat-item">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Avg. Volume</span>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {% if stock_info.avg_volume != 'N/A' %}
+                                    {{ '{:,}'.format(stock_info.avg_volume) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="stat-item">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">52-Week High</span>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {% if stock_info.fifty_two_week_high != 'N/A' %}
+                                    {{ stock_info.formatted_fifty_two_week_high }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="stat-item">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">52-Week Low</span>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {% if stock_info.fifty_two_week_low != 'N/A' %}
+                                    {{ stock_info.formatted_fifty_two_week_low }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-gray-800 transition-colors duration-200">
+            <div class="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                    © {{ current_year }} Stock Market Tracker. All rights reserved.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Function to handle logout
+        function handleLogout(event) {
+            event.preventDefault();
+            
+            // Log the logout action
+            logUserAction('logout_button_clicked', 'User clicked logout button');
+            
+            fetch('/auth/jwt/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'redirect_url=/',
+                redirect: 'manual'
+            })
+            .then(response => {
+                // Always redirect to home regardless of response
+                window.location.href = '/';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Still redirect to home on error
+                window.location.href = '/';
+            });
+            
+            return false;
+        }
+        
+        // Function to log user interactions
+        function logUserAction(action, details) {
+            // Log to console for debugging
+            console.log(`User Action: ${action} - ${details}`);
+            
+            // Send log to server (optional)
+            fetch('/log-action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    details: details,
+                    page: 'stock_details',
+                    timestamp: new Date().toISOString()
+                })
+            }).catch(error => {
+                console.error('Error logging action:', error);
+            });
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log page view
+            logUserAction('stock_details_page_view', 'User viewed stock details page for {{ symbol }} with period {{ current_period }}');
+            
+            // Add event listeners to period buttons
+            document.querySelectorAll('a[href^="/chart/{{ symbol }}?period="]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const period = this.getAttribute('href').split('=')[1];
+                    logUserAction('period_change', `User changed stock details period to ${period}`);
+                });
+            });
+            
+            // Track dark mode toggle
+            const darkModeButton = document.querySelector('button[x-on\\:click="darkMode = !darkMode"]');
+            if (darkModeButton) {
+                darkModeButton.addEventListener('click', function() {
+                    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                    logUserAction('theme_change', isDarkMode ? 'Light mode enabled' : 'Dark mode enabled');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
