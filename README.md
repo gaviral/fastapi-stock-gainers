@@ -20,10 +20,12 @@ Visit: [https://fastapi-stock-gainers.onrender.com](https://fastapi-stock-gainer
 
 ## Installation
 
+Note: Make sure `uv` is installed. If not, install it with `pip install uv`.
+
 1. Clone the repository
 2. Install dependencies:
 ```bash
-pip install -r requirements.txt
+rm -rf .venv && uv venv && source .venv/bin/activate && uv pip install -r requirements.txt
 ```
 3. Copy `.env.example` to `.env` and configure your environment variables:
 ```bash
