@@ -335,7 +335,7 @@
                                     {% set percentage = 0 if percentage < 0 else percentage %}
                                     {% set percentage = 100 if percentage > 100 else percentage %}
                                     <div class="h-2.5 rounded-full {{ 'bg-green-500' if stock_data.change|default(0) > 0 else 'bg-red-500' }}" 
-                                         style="width: {{ percentage }}%;"></div>
+                                         style="width: {{ percentage }}%"></div>
                                 </div>
                                 <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     <span>{{ stock_data.formatted_low|default('$0.00') }}</span>
@@ -578,11 +578,11 @@
 
     <script>
         // Any existing custom JavaScript can be preserved here
-        {% raw %}
-        {%- if existing_custom_js -%}
-            {{ existing_custom_js | safe }}
-        {%- endif -%}
-        {% endraw %}
+        // {% raw %}
+        // {%- if existing_custom_js -%}
+        //     {{ existing_custom_js | safe }}
+        // {%- endif -%}
+        // {% endraw %}
         
         // Function to handle logout
         function handleLogout(event) {

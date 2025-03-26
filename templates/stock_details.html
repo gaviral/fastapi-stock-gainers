@@ -249,7 +249,7 @@
                                 <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                                     {% set range = stock_info.period_high - stock_info.period_low %}
                                     {% set position = ((stock_info.current_price - stock_info.period_low) / range) * 100 if range > 0 else 50 %}
-                                    <div class="h-2 bg-primary rounded-full" style="width: {{ position }}%;"></div>
+                                    <div class="h-2 bg-primary rounded-full" style="width: {{ position }}%"></div>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-sm text-gray-700 dark:text-gray-300">High</span>

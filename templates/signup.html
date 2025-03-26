@@ -150,7 +150,7 @@
                                          'bg-warning': passwordStrength >= 2 && passwordStrength < 4,
                                          'bg-success': passwordStrength >= 4
                                      }"
-                                     :style="`width: ${passwordStrength * 20}%`"></div>
+                                     :style="'width: ' + (passwordStrength * 20) + '%'"></div>
                             </div>
                             <p class="text-xs text-gray-500 dark:text-gray-400" 
                                :class="{
